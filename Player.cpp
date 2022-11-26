@@ -1,7 +1,9 @@
 #include "Player.h"
 
 Player::Player(int playerId, int teamId, int gamesPlayed, int goals, int cards, bool goalKeeper) : 
-		pStats(playerId, teamId, gamesPlayed, goals, cards, goalKeeper) {}
+		pStats(playerId, teamId, gamesPlayed, goals, cards, goalKeeper) 
+{
+}
 
 void Player::updateStats(int gamesPlayed, int scoredGoals, int cardsReceieved)
 {
@@ -60,18 +62,11 @@ bool Player::operator>(const Player& other) const
 
 bool Player::operator==(const Player& other) const
 {
-	/*
-	if (this->pStats.goals == other.pStats.goals && 
-			this->pStats.cards == other.pStats.cards && 
-			this->pStats.playerId == other.pStats.playerId)
-	{
-		return true;
-	}
-	*/
 	if (this->pStats.playerId == other.pStats.playerId)
 	{
 		return true;
 	}
+
 	return false;
 }
 

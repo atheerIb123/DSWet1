@@ -1,9 +1,11 @@
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
+
 class PlayerStats
 {
 public:
+	PlayerStats(){}
 	PlayerStats(int playerId, int teamId, int gamesPlayed, int goals, int cards, bool goalKeeper)
 	{
 		this->playerId = playerId;
@@ -25,6 +27,7 @@ public:
 class Player
 {
 public:
+	Player(){}
 	Player(int playerId, int teamId, int gamesPlayed, int goals, int cards, bool goalKeeper);
 	~Player() = default;
 	Player(const Player& other) = default;
@@ -34,8 +37,14 @@ public:
 	bool operator<(const Player& other) const;
 	bool operator>(const Player& other) const;
 	bool operator==(const Player& other) const;
-private:
 	PlayerStats pStats;
+private:
+	/*int playerId;
+	int teamId;
+	int gamesPlayed;
+	int goals;
+	int cards;
+	bool goalKeeper;*/
 };
 
 #endif

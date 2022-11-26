@@ -20,6 +20,15 @@ public:
 template<class T>
 class AVLTree
 {
+private:
+	Node<T>* root;
+	int numOfNodes;
+
+	int max(int val1, int val2) const;
+	static Node<T>* findMinNode(Node<T>* root);
+	Node<T>* insertNode(Node<T>* root, T& data);
+	Node<T>* removeNode(Node<T>*, T& data);
+
 public:
 	AVLTree() : root(nullptr), numOfNodes(0) {}
 	~AVLTree();
@@ -31,21 +40,12 @@ public:
 	Node<T>* balanceTree(Node<T>* root); //a helper method for rotations
 	int getBalance(Node<T>* node);
 
-	void insert(T& data);
+	Node<T>* insert(T& data);
 	Node<T>* find(Node<T>* root, const T& data);
-	void remove(T& data);
+	Node<T>* remove(T& data);
 	Node<T>* getRoot() const;
 	void inOrder(Node<T>* root, T* const output, int& index) const;
 	void inOrderMinToMax(Node<T>* node, T* min, T* max, T* const output, int& index) const;
-
-private:
-	Node<T>* root;
-	int numOfNodes;
-
-	int max(int val1, int val2) const;
-	static Node<T>* findMinNode(Node<T>* root);
-	Node<T>* insertNode(Node<T>* root, T& data);
-	Node<T>* removeNode(Node<T>*, T& data);
 };
 
 template<class T>
@@ -113,16 +113,16 @@ inline AVLTree<T>::~AVLTree()
 }
 
 template<class T>
-inline void AVLTree<T>::deleteTree(Node<T>* root)
+inline void AVLTree<T>::deleteTree(Node<T>* node)
 {
-	if (root == nullptr)
+	if (node == NULL)
 	{
 		return;
 	}
 
-	deleteTree(root->left);
-	deleteTree(root->right);
-	delete root;
+	deleteTree(node->left);
+	deleteTree(node->right);
+	delete node;
 }
 
 template<class T>
@@ -270,45 +270,50 @@ inline Node<T>* AVLTree<T>::insertNode(Node<T>* node, T& data)
 }
 
 template<class T>
-inline void AVLTree<T>::insert(T& data)
+inline Node<T>* AVLTree<T>::insert(T& data)
 {
 	if (find(this->root, data))
-	{
-		return;
-	}
-
-	insertNode(this->root, data);
-}
-
-template<class T>
-inline Node<T>* AVLTree<T>::find(Node<T>* root, const T& data)
-{
-	if (root == nullptr)
 	{
 		return nullptr;
 	}
 
-	if (*(root->data) == data)
+	return insertNode(this->root, data);
+}
+
+template<class T>
+inline Node<T>* AVLTree<T>::find(Node<T>* node, const T& data)
+{
+	if (node == nullptr)
 	{
-		return root;
+		return nullptr;
 	}
 
-	if (*(root->data) < data)
+	if (*(node->data) == data)
 	{
-		return find(root->right, data);
+		return node;
 	}
-	else if (*(root->data) > data)
+
+	if (*(node->data) < data)
 	{
-		return find(root->left, data);
+		return find(node->right, data);
+	}
+	else if (*(node->data) > data)
+	{
+		return find(node->left, data);
 	}
 
 	return nullptr;
 }
 
 template<class T>
-inline void AVLTree<T>::remove(T& data)
+inline Node<T>* AVLTree<T>::remove(T& data)
 {
-	removeNode(this->root, data);
+	if (!find(this->root, data))
+	{
+		return nullptr;
+	}
+
+	return removeNode(this->root, data);
 }
 
 template<class T>
@@ -400,7 +405,7 @@ inline void AVLTree<T>::inOrderMinToMax(Node<T>* node, T* min, T* max, T* const 
 		output[index++] = *(node->data);
 	}
 
-	if ((*(node->data) < *(max) || *(node->data) == *(max)) && (*(node->data) > *(min) || *(node->data) == *(max)))
+	if ((*(node->data) < *(max) || *(node->data) == *(max)) && (*(node->data) > *(min) || *(node->data) == *(min)))
 	{
 		inOrderMinToMax(node->left, min, max, output, index);
 		output[index++] = *(node->data);
@@ -415,7 +420,6 @@ inline void AVLTree<T>::inOrderMinToMax(Node<T>* node, T* min, T* max, T* const 
 		inOrderMinToMax(node->left, min, max, output, index);
 	}
 }
-
 
 #endif
 
