@@ -78,6 +78,11 @@ int Team::getTeamPoints() const
     return this->points;
 }
 
+void Team::addPoints(int points)
+{
+    this->points += points;
+}
+
 int Team::getTopScorer() const
 {
     return this->topScorerId;
@@ -103,9 +108,16 @@ void Team::getPlayerDetails(Player* const out)
 
 bool Team::operator<(const Team& other) const
 {
-    if (this->teamId < other.teamId)
+    if (this->getTeamPower() < other.getTeamPower())
     {
         return true;
+    }
+    else if (this->getTeamPower() == other.getTeamPower())
+    {
+        if (this->teamId < other.teamId)
+        {
+            return true;
+        }
     }
 
     return false;
@@ -113,9 +125,16 @@ bool Team::operator<(const Team& other) const
 
 bool Team::operator>(const Team& other) const
 {
-    if (this->teamId > other.teamId)
+    if (this->getTeamPower() > other.getTeamPower())
     {
         return true;
+    }
+    else if (this->getTeamPower() == other.getTeamPower())
+    {
+        if (this->teamId > other.teamId)
+        {
+            return true;
+        }
     }
 
     return false;

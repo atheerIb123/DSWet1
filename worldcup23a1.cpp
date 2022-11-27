@@ -90,8 +90,19 @@ StatusType world_cup_t::play_match(int teamId1, int teamId2)
 
 output_t<int> world_cup_t::get_num_played_games(int playerId)
 {
-	// TODO: Your code goes here
-	return 22;
+	Player tempPlayer(playerId, 0, 0, 0, 0, false);
+	Node<Player>* temp = players.find(players.getRoot(), tempPlayer);
+	
+	if (!temp)
+	{
+		output_t<int> output(StatusType::FAILURE);
+		return output;
+	}
+
+	int gamesPlayed = (temp->data->pStats.gamesPlayed);
+	output_t<int> output(gamesPlayed);
+
+	return output;
 }
 
 output_t<int> world_cup_t::get_team_points(int teamId)
@@ -135,7 +146,22 @@ output_t<int> world_cup_t::get_closest_player(int playerId, int teamId)
 
 output_t<int> world_cup_t::knockout_winner(int minTeamId, int maxTeamId)
 {
-	// TODO: Your code goes here
+	Team tempMin(minTeamId, 0), tempMax(maxTeamId, 0);
+	Node<Team>* minNode = activeTeams.find(activeTeams.getRoot(), tempMin);
+	Node<Team>* maxNode = activeTeams.find(activeTeams.getRoot(), tempMax);
+	
+	Team* const participatingTeams = new Team[activeTeams.getNodesNum()];
+	int index = 0;
+
+	teams.inOrderMinToMax(teams.getRoot(), minNode->data, maxNode->data, participatingTeams, index);
+	if (index == 0)
+		return StatusType::FAILURE;
+	for (int i = 1; i < index; i += 2)
+	{
+		participatingTeams[i].addPoints(participatingTeams[i - 1].getTeamPoints());
+
+	}
+
 	return 2;
 }
 

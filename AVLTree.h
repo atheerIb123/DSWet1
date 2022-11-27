@@ -39,7 +39,7 @@ public:
 	Node<T>* leftRotation(Node<T>* root);
 	Node<T>* balanceTree(Node<T>* root); //a helper method for rotations
 	int getBalance(Node<T>* node);
-
+	int getNodesNum() const;
 	Node<T>* insert(T& data);
 	Node<T>* find(Node<T>* root, const T& data);
 	Node<T>* remove(T& data);
@@ -236,6 +236,12 @@ inline int AVLTree<T>::getBalance(Node<T>* node)
 	{
 		return (calcHeight(node->left) - calcHeight(node->right));
 	}
+}
+
+template<class T>
+inline int AVLTree<T>::getNodesNum() const
+{
+	return this->numOfNodes;
 }
 
 template<class T>

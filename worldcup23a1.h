@@ -23,6 +23,7 @@ class world_cup_t {
 private:
 	AVLTree<Team> teams;
 	AVLTree<Player> players;
+	AVLTree<Team> activeTeams;
 	int topScorer;
 	int totalTeams;
 public:
