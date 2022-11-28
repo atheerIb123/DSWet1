@@ -34,6 +34,7 @@ public:
 	Player& operator=(const Player& other) = default;
 
 	void updateStats(int gamesPlayed, int scoredGoals, int cardsReceieved);
+	int getTeamId() const;
 	bool operator<(const Player& other) const;
 	bool operator>(const Player& other) const;
 	bool operator==(const Player& other) const;

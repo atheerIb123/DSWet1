@@ -32,7 +32,10 @@ public:
 	int getTopScorer() const;
 	int getTeamPower() const;
 	int getPlayersCount() const;
+	int getID() const;
 	void getPlayerDetails(Player* const out);
+	bool hasGoalKeeper() const;
+	Node<Player>* findPlayer(Player p);
 	bool operator<(const Team& other) const;
 	bool operator>(const Team& other) const;
 	bool operator==(const Team& other) const;

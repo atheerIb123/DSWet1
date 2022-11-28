@@ -99,44 +99,45 @@ int Team::getPlayersCount() const
     return this->totalPlayers;
 }
 
+int Team::getID() const
+{
+    return this->teamId;
+}
+
 void Team::getPlayerDetails(Player* const out)
 {
     int index = 0;
     this->teamTree.inOrder(teamTree.getRoot(), out, index);
 }
 
+bool Team::hasGoalKeeper() const
+{
+    if (this->goalKeepers[0])
+        return true;
+    return false;
+}
+
+Node<Player>* Team::findPlayer(Player p)
+{
+    return this->teamTree.find(teamTree.getRoot(), p);
+}
+
 
 bool Team::operator<(const Team& other) const
 {
-    if (this->getTeamPower() < other.getTeamPower())
+    if (this->teamId < other.teamId)
     {
         return true;
     }
-    else if (this->getTeamPower() == other.getTeamPower())
-    {
-        if (this->teamId < other.teamId)
-        {
-            return true;
-        }
-    }
-
     return false;
 }
 
 bool Team::operator>(const Team& other) const
 {
-    if (this->getTeamPower() > other.getTeamPower())
+    if (this->teamId > other.teamId)
     {
         return true;
     }
-    else if (this->getTeamPower() == other.getTeamPower())
-    {
-        if (this->teamId > other.teamId)
-        {
-            return true;
-        }
-    }
-
     return false;
 }
 

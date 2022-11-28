@@ -21,9 +21,10 @@
 
 class world_cup_t {
 private:
-	AVLTree<Team> teams;
 	AVLTree<Player> players;
+	AVLTree<Team> teamsInSystem;
 	AVLTree<Team> activeTeams;
+	AVLTree<Team> nonEmptyTeams;
 	int topScorer;
 	int totalTeams;
 public:
@@ -61,6 +62,8 @@ public:
 	output_t<int> get_closest_player(int playerId, int teamId);
 
 	output_t<int> knockout_winner(int minTeamId, int maxTeamId);
+
+	output_t<int> knockout_winner_aux(int minTeamId, int maxTeamId, Team* participatingTeams, int size);
 
 	// } </DO-NOT-MODIFY>
 };

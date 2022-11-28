@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "Player.h"
 
 Player::Player(int playerId, int teamId, int gamesPlayed, int goals, int cards, bool goalKeeper) : 
 		pStats(playerId, teamId, gamesPlayed, goals, cards, goalKeeper) 
@@ -10,6 +11,11 @@ void Player::updateStats(int gamesPlayed, int scoredGoals, int cardsReceieved)
 	pStats.goals += scoredGoals;
 	pStats.gamesPlayed += gamesPlayed;
 	pStats.cards += cardsReceieved;
+}
+
+int Player::getTeamId() const
+{
+	return this->pStats.teamId;
 }
 
 bool Player::operator<(const Player& other) const
