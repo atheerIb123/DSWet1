@@ -7,7 +7,7 @@ template<class T>
 class Node
 {
 public:
-	Node(T data) : data(new T(data)),left(nullptr), right(nullptr) {}
+	Node(T& data) : data(new T(data)),left(nullptr), right(nullptr) {}
 	Node(const Node& other);
 	Node& operator=(const Node& other);
 	~Node();
@@ -28,9 +28,11 @@ private:
 	static Node<T>* findMinNode(Node<T>* root);
 	Node<T>* insertNode(Node<T>* root, T& data);
 	Node<T>* removeNode(Node<T>*, T& data);
-
+	Node<T>* copyNodes(Node<T>* node);
 public:
 	AVLTree() : root(nullptr), numOfNodes(0) {}
+	AVLTree(const AVLTree& other);
+	AVLTree<T>& operator=(const AVLTree<T>& other);
 	~AVLTree();
 	void deleteTree(Node<T>* root);
 
@@ -46,6 +48,8 @@ public:
 	Node<T>* getRoot() const;
 	void inOrder(Node<T>* root, T* const output, int& index) const;
 	void inOrderMinToMax(Node<T>* node, T* min, T* max, T* const output, int& index) const;
+	void mergeTrees();
+
 };
 
 template<class T>
@@ -105,6 +109,28 @@ Node<T>::~Node<T>()
 	delete data;
 }
 
+
+template<class T>
+inline AVLTree<T>::AVLTree(const AVLTree& other)
+{
+	this->root = copyNodes(other.getRoot());
+	this->numOfNodes = other.numOfNodes;
+}
+
+template<class T>
+inline AVLTree<T>& AVLTree<T>::operator=(const AVLTree<T>& other)
+{
+	if (this == &other)
+	{
+		return *this;
+	}
+
+	deleteTree(this->root);
+	this->root = copyNodes(other.root);
+	this->numOfNodes = other.numOfNodes;
+
+	return *this;
+}
 
 template<class T>
 inline AVLTree<T>::~AVLTree()
@@ -382,6 +408,20 @@ inline Node<T>* AVLTree<T>::removeNode(Node<T>* node, T& data)
 	this->root = node;
 
 	return this->root;
+}
+
+template<class T>
+inline Node<T>* AVLTree<T>::copyNodes(Node<T>* node)
+{
+	if (node != nullptr)
+	{
+		Node<T>* newNode = new Node<T>(*(node->data));
+		newNode->left = copyNodes(node->left);
+		newNode->right = copyNodes(node->right);
+		return newNode;
+	}
+
+	return nullptr;
 }
 
 template<class T>
