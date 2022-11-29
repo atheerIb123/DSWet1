@@ -161,6 +161,8 @@ StatusType world_cup_t::remove_player(int playerId)
 		return StatusType::FAILURE;
 	}
 
+	int teamIdOfPlayer = tempPlayer->data->getTeamId();
+
 	PlayerByStats tempSt(playerId, tempPlayer->data->getTeamId(), tempPlayer->data->getGamesPlayed(), tempPlayer->data->getGoalsCount(), tempPlayer->data->getCardsCount(), tempPlayer->data->isGoalKeeper());
 	
 	int amountOfPlayers[2] = { 0 };
@@ -175,7 +177,7 @@ StatusType world_cup_t::remove_player(int playerId)
 		return StatusType::FAILURE;
 	}
 
-	Node<Team>* currentTeam = findTeam(tempPlayer->data->getTeamId(), false);
+	Node<Team>* currentTeam = findTeam(teamIdOfPlayer, false);
 	
 	if (currentTeam->data->removePlayer(playerId) == false)
 	{
@@ -187,8 +189,10 @@ StatusType world_cup_t::remove_player(int playerId)
 		nonEmptyTeams.remove(*currentTeam->data);
 	}
 
-
-	currentTeam = activeTeams.find(activeTeams.getRoot(), *(currentTeam->data));
+	if (currentTeam != nullptr)
+	{
+		currentTeam = activeTeams.find(activeTeams.getRoot(), *(currentTeam->data));
+	}
 
 	if (currentTeam != nullptr)
 	{
@@ -232,7 +236,10 @@ StatusType world_cup_t::update_player_stats(int playerId, int gamesPlayed,
 
 	Team tempTeam(currentTeam->data->getID(), 0);
 	currentTeam = activeTeams.find(activeTeams.getRoot(), tempTeam);
-	currentTeam->data->updatePlayerStatsInTeam(p, playerId, gamesPlayed, scoredGoals, cardsReceived);
+	if (currentTeam != nullptr)
+	{
+		currentTeam->data->updatePlayerStatsInTeam(p, playerId, gamesPlayed, scoredGoals, cardsReceived);
+	}
 
 
 
