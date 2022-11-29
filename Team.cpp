@@ -36,20 +36,23 @@ bool Team::insertPlayer(int playerId, int gamesPlayed, int goals, int cards, boo
 
 bool Team::removePlayer(int playerId)
 {
-    PlayerByStats tempPlayerSt(playerId, this->teamId, 0, 0, 0, false);
     PlayerById tempPlayerId(playerId, this->teamId, 0, 0, 0, false);
 
-    Node<PlayerByStats>* tempSt = teamTreeByStats.find(teamTreeByStats.getRoot(), tempPlayerSt);
     Node<PlayerById>* tempId = teamTreeById.find(teamTreeById.getRoot(), tempPlayerId);
+    PlayerByStats tempPlayerSt(playerId, this->teamId, tempId->data->getGamesPlayed(), tempId->data->getGoalsCount(), tempId->data->getCardsCount(), tempId->data->isGoalKeeper());
+    Node<PlayerByStats>* tempSt = teamTreeByStats.find(teamTreeByStats.getRoot(), tempPlayerSt);
 
     if (!tempSt || !tempId)
     {
         return false;
     }
 
+    int goals = tempId->data->getGoalsCount(), cards = tempId->data->getCardsCount();
+    bool gk = tempId->data->isGoalKeeper();
+
     Node<PlayerByStats>* toRemoveSt = teamTreeByStats.remove(*(tempSt->data));
     Node<PlayerById>* toRemoveId = teamTreeById.remove(*(tempId->data));
-
+    
     if (this->totalPlayers == 1 && (toRemoveId != nullptr || toRemoveSt != nullptr))
     {
         return false;
@@ -59,10 +62,10 @@ bool Team::removePlayer(int playerId)
 
     if (toRemoveId != nullptr)
     {
-        this->totalCards -= toRemoveId->data->getCardsCount();
-        this->totalGoals -= toRemoveId->data->getGoalsCount();
+        this->totalCards -= cards;
+        this->totalGoals -= goals;
 
-        if (toRemoveId->data->isGoalKeeper() == true)
+        if (gk == true)
         {
             if (this->goalKeepers[1] == 1)
             {
@@ -76,6 +79,18 @@ bool Team::removePlayer(int playerId)
     }
 
     return true;
+}
+
+void Team::updatePlayerStatsInTeam(PlayerByStats& p, int playerId, int gamesToAdd, int goalsToAdd, int cardsToAdd)
+{
+    PlayerById tempPlayer(playerId, 0, 0, 0, 0, false);
+    Node<PlayerById>* currentPlayer = teamTreeById.find(teamTreeById.getRoot(), tempPlayer);
+    currentPlayer->data->updateStats(gamesToAdd, goalsToAdd, cardsToAdd);
+    Node<PlayerByStats>* currentPlayerByStats = teamTreeByStats.find(teamTreeByStats.getRoot(), p);
+    currentPlayerByStats->data->updateStats(gamesToAdd, goalsToAdd, cardsToAdd);
+    this->totalCards += cardsToAdd;
+    this->totalGoals += goalsToAdd;
+
 }
 
 int Team::getTeamPoints() const
@@ -121,13 +136,6 @@ bool Team::hasGoalKeeper() const
         return true;
     return false;
 }
-
-Node<Player>* Team::findPlayer(Player p)
-{
-    return this->teamTree.find(teamTree.getRoot(), p);
-}
-
-
 
 
 bool Team::operator<(const Team& other) const

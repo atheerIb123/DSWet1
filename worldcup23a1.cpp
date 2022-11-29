@@ -31,6 +31,11 @@ world_cup_t::world_cup_t()
 
 StatusType world_cup_t::add_team(int teamId, int points)
 {
+	if (teamId <= 0 || points < 0)
+	{
+		return StatusType::INVALID_INPUT;
+	}
+
 	Team newTeam(teamId, points);
 
 	if (!teamsInSystem.insert(newTeam))
@@ -46,7 +51,13 @@ StatusType world_cup_t::add_team(int teamId, int points)
 
 StatusType world_cup_t::remove_team(int teamId)
 {
+	if (teamId <= 0)
+	{
+		return StatusType::INVALID_INPUT;
+	}
+
 	Team tempTeam(teamId, 0);
+
 	if (!teamsInSystem.find(teamsInSystem.getRoot(), tempTeam) || teamsInSystem.find(teamsInSystem.getRoot(), tempTeam)->data->getPlayersCount() >= 1)
 	{
 		return StatusType::FAILURE;
@@ -68,33 +79,60 @@ StatusType world_cup_t::remove_team(int teamId)
 StatusType world_cup_t::add_player(int playerId, int teamId, int gamesPlayed,
 	int goals, int cards, bool goalKeeper)
 {
-	Team tempTeam(teamId, 0);
-
-	Node<Team>* team = teamsInSystem.find(teamsInSystem.getRoot(), tempTeam);
-
-
-	if (team->data->insertPlayer(playerId, gamesPlayed, goals, cards, goalKeeper) == false || !team)
+	if (playerId <= 0 || teamId <= 0 || gamesPlayed < 0 || goals < 0 || cards < 0)
 	{
 		return StatusType::FAILURE;
 	}
 
-	Player newPlayer(playerId, teamId, gamesPlayed, goals, cards, goalKeeper);
-
-	if (players.find(players.getRoot(), newPlayer))
+	if (gamesPlayed == 0 && (goals > 0 || cards > 0))
 	{
 		return StatusType::FAILURE;
 	}
 
-	if (!players.insert(newPlayer))
+	Node<Team>* team = findTeam(teamId, true);
+
+	if (team == nullptr)
 	{
 		return StatusType::FAILURE;
 	}
 
-	if (team->data->getPlayersCount() == 1)
-		nonEmptyTeams.insert(*team->data);
-	//to do add player to team 
+	if (nonEmptyTeams.find(nonEmptyTeams.getRoot(), *(team->data)) == nullptr)
+	{
+		if (team->data->insertPlayer(playerId, gamesPlayed, goals, cards, goalKeeper) == false)
+		{
+			return StatusType::FAILURE;
+		}
 
-	if (team->data->getPlayersCount() >= 11 && team->data->hasGoalKeeper())
+		nonEmptyTeams.insert(*(team->data));
+	}
+	else
+	{
+		Node<Team>* tempTeam = findTeam(teamId, false); //Find it in the nonEmptyTeams tree
+
+		if (tempTeam->data->insertPlayer(playerId, gamesPlayed, goals, cards, goalKeeper) == false)
+		{
+			return StatusType::FAILURE;
+		}
+	}
+
+	//Adding the player to the players' trees
+	PlayerById newPlayerId(playerId, teamId, gamesPlayed, goals, cards, goalKeeper);
+	PlayerByStats newPlayerSt(playerId, teamId, gamesPlayed, goals, cards, goalKeeper);
+
+	if (playersById.find(playersById.getRoot(), newPlayerId) || playersByStats.find(playersByStats.getRoot(), newPlayerSt))
+	{
+		return StatusType::FAILURE;
+	}
+
+	if (!playersByStats.insert(newPlayerSt) || !playersById.insert(newPlayerId))
+	{
+		return StatusType::FAILURE;
+	}
+
+	
+	//Checking if the team is fit to join the active teams tree
+	Node<Team>* tempTeam = findTeam(teamId, false);
+	if (tempTeam->data->getPlayersCount() >= 11 && tempTeam->data->hasGoalKeeper())
 	{
 		Node<Team>* currentTeam = activeTeams.find(activeTeams.getRoot(), *team->data);
 		if (currentTeam == nullptr)
@@ -104,40 +142,57 @@ StatusType world_cup_t::add_player(int playerId, int teamId, int gamesPlayed,
 			currentTeam->data->insertPlayer(playerId, gamesPlayed, goals, cards, goalKeeper);
 		}
 	}
+
 	return StatusType::SUCCESS;
 }
 
 StatusType world_cup_t::remove_player(int playerId)
 {
-	Player temp(playerId, 0, 0, 0, 0, false);
-	Node<Player>* newPlayer = players.find(players.getRoot(), temp);
+	if (playerId <= 0)
+	{
+		return StatusType::INVALID_INPUT;
+	}
 
-	if (newPlayer == nullptr)
+	PlayerById temp(playerId, 0, 0, 0, 0, false);
+	Node<PlayerById>* tempPlayer = playersById.find(playersById.getRoot(), temp);
+
+	if (tempPlayer == nullptr)
 	{
 		return StatusType::FAILURE;
 	}
 
-	int amountOfPlayers = players.getNodesNum();
-	players.remove(*newPlayer->data);
+	PlayerByStats tempSt(playerId, tempPlayer->data->getTeamId(), tempPlayer->data->getGamesPlayed(), tempPlayer->data->getGoalsCount(), tempPlayer->data->getCardsCount(), tempPlayer->data->isGoalKeeper());
+	
+	int amountOfPlayers[2] = { 0 };
+	amountOfPlayers[0] = playersById.getNodesNum();
+	amountOfPlayers[1] = playersByStats.getNodesNum();
 
-	if (players.getNodesNum() == amountOfPlayers)
+	playersById.remove(*tempPlayer->data);
+	playersByStats.remove(tempSt);
+
+	if (playersById.getNodesNum() == amountOfPlayers[0] || playersByStats.getNodesNum() == amountOfPlayers[1])
 	{
 		return StatusType::FAILURE;
 	}
 
-	Team tempTeam(newPlayer->data->pStats.teamId, 0);
+	Node<Team>* currentTeam = findTeam(tempPlayer->data->getTeamId(), false);
+	
+	if (currentTeam->data->removePlayer(playerId) == false)
+	{
+		return StatusType::FAILURE;
+	}
 
-	Node<Team>* currentTeam = nonEmptyTeams.find(nonEmptyTeams.getRoot(), tempTeam);
-	currentTeam->data->removePlayer(newPlayer->data->pStats.teamId);
 	if (currentTeam != nullptr && currentTeam->data->getPlayersCount() == 0)
+	{
 		nonEmptyTeams.remove(*currentTeam->data);
+	}
 
 
-	currentTeam = activeTeams.find(activeTeams.getRoot(), tempTeam);
+	currentTeam = activeTeams.find(activeTeams.getRoot(), *(currentTeam->data));
 
 	if (currentTeam != nullptr)
 	{
-		currentTeam->data->removePlayer(newPlayer->data->pStats.teamId);
+		currentTeam->data->removePlayer(playerId);
 		if (currentTeam->data->getPlayersCount() < 11 || !currentTeam->data->hasGoalKeeper())
 		{
 			activeTeams.remove(*currentTeam->data);
@@ -155,26 +210,31 @@ StatusType world_cup_t::update_player_stats(int playerId, int gamesPlayed,
 		return StatusType::INVALID_INPUT;
 	}
 
-	Player tempPlayer(playerId, 0, gamesPlayed, scoredGoals, cardsReceived, false);
-	Node<Player>* currentPlayer = players.find(players.getRoot(), tempPlayer);
+	PlayerById tempPlayer(playerId, 0, gamesPlayed, scoredGoals, cardsReceived, false);
+	Node<PlayerById>* currentPlayer = playersById.find(playersById.getRoot(), tempPlayer);
 	if (currentPlayer == nullptr)
 	{
 		return StatusType::FAILURE;
 	}
+
+	PlayerByStats p(playerId, currentPlayer->data->getTeamId(), currentPlayer->data->getGamesPlayed(), currentPlayer->data->getGoalsCount(), currentPlayer->data->getCardsCount(), currentPlayer->data->isGoalKeeper());
 	currentPlayer->data->updateStats(gamesPlayed, scoredGoals, cardsReceived);
 
 
-	Team tempTeam(currentPlayer->data->getTeamId(), 0);
-	Node<Team>* currentTeam = nonEmptyTeams.find(nonEmptyTeams.getRoot(), tempTeam);
-	currentPlayer = currentTeam->data->findPlayer(tempPlayer);
-	if (currentPlayer != nullptr)
-		currentPlayer->data->updateStats(gamesPlayed, scoredGoals, cardsReceived);
+	Node<PlayerByStats>* playerToUpdate = playersByStats.find(playersByStats.getRoot(), p);
+	playerToUpdate->data->updateStats(gamesPlayed, scoredGoals, cardsReceived);
 
 
+	Node<Team>* currentTeam = findTeam(currentPlayer->data->getTeamId(), false);
+	currentTeam->data->updatePlayerStatsInTeam(p, playerId, gamesPlayed, scoredGoals, cardsReceived);
+
+
+
+	Team tempTeam(currentTeam->data->getID(), 0);
 	currentTeam = activeTeams.find(activeTeams.getRoot(), tempTeam);
-	currentPlayer = currentTeam->data->findPlayer(tempPlayer);
-	if (currentPlayer != nullptr)
-		currentPlayer->data->updateStats(gamesPlayed, scoredGoals, cardsReceived);
+	currentTeam->data->updatePlayerStatsInTeam(p, playerId, gamesPlayed, scoredGoals, cardsReceived);
+
+
 
 	return StatusType::SUCCESS;
 }

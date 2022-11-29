@@ -37,7 +37,7 @@ public:
 	int getID() const;
 	void getPlayersDetails(PlayerByStats* const out);
 	bool hasGoalKeeper() const;
-	Node<PlayerById>* findPlayerById(PlayerById& p);
+	void updatePlayerStatsInTeam(PlayerByStats& p, int playerId, int gamesToAdd, int goalsToAdd, int cardsToAdd);
 	bool operator<(const Team& other) const;
 	bool operator>(const Team& other) const;
 	bool operator==(const Team& other) const;

@@ -22,6 +22,7 @@
 class world_cup_t {
 private:
 	AVLTree<PlayerByStats> playersByStats;
+	AVLTree<PlayerById> playersById;
 	AVLTree<Team> teamsInSystem;
 	AVLTree<Team> activeTeams;
 	AVLTree<Team> nonEmptyTeams;

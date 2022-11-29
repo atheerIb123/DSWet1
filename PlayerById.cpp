@@ -38,6 +38,11 @@ int PlayerById::getCardsCount() const
 	return this->cards;
 }
 
+int PlayerById::getGamesPlayed() const
+{
+	return this->gamesPlayed;
+}
+
 bool PlayerById::isGoalKeeper() const
 {
 	return this->goalKeeper;

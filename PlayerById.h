@@ -14,6 +14,7 @@ public:
 	int getTeamId() const;
 	int getGoalsCount() const;
 	int getCardsCount() const;
+	int getGamesPlayed() const;
 	bool isGoalKeeper() const;
 	bool operator<(const PlayerById& other) const;
 	bool operator>(const PlayerById& other) const;
