@@ -21,12 +21,15 @@
 
 class world_cup_t {
 private:
-	AVLTree<Player> players;
+	AVLTree<PlayerByStats> playersByStats;
 	AVLTree<Team> teamsInSystem;
 	AVLTree<Team> activeTeams;
 	AVLTree<Team> nonEmptyTeams;
+
 	int topScorer;
 	int totalTeams;
+
+	Node<Team>* findTeam(int teamId, bool emptyFlag);
 public:
 	// <DO-NOT-MODIFY> {
 

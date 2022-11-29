@@ -2,13 +2,15 @@
 #define TEAM_H_
 
 #include "AVLTree.h"
-#include "Player.h"
+#include "PlayerByStats.h"
+#include "PlayerById.h"
 
 class Team
 {
 private:
 
-	AVLTree<Player> teamTree;
+	AVLTree<PlayerByStats> teamTreeByStats;
+	AVLTree<PlayerById> teamTreeById;
 	int teamId;
 	int points;
 	int goalKeepers[2];
@@ -19,12 +21,12 @@ private:
 	int* totalGamesPlayed;
 
 public:
-	Team(){}
+	Team() {}
 	Team(int teamId, int points);
 	~Team() = default;
 	Team(const Team& other) = default;
 	Team& operator=(const Team& other) = default;
-	
+
 	bool insertPlayer(int playerId, int gamesPlayed, int goals, int cards, bool gk);
 	bool removePlayer(int playerId);
 	int getTeamPoints() const;
@@ -33,9 +35,9 @@ public:
 	int getTeamPower() const;
 	int getPlayersCount() const;
 	int getID() const;
-	void getPlayerDetails(Player* const out);
+	void getPlayersDetails(PlayerByStats* const out);
 	bool hasGoalKeeper() const;
-	Node<Player>* findPlayer(Player p);
+	Node<PlayerById>* findPlayerById(PlayerById& p);
 	bool operator<(const Team& other) const;
 	bool operator>(const Team& other) const;
 	bool operator==(const Team& other) const;
