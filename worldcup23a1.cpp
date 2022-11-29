@@ -247,8 +247,8 @@ StatusType world_cup_t::play_match(int teamId1, int teamId2)
 
 output_t<int> world_cup_t::get_num_played_games(int playerId)
 {
-	Player tempPlayer(playerId, 0, 0, 0, 0, false);
-	Node<Player>* temp = players.find(players.getRoot(), tempPlayer);
+	PlayerById tempPlayer(playerId, 0, 0, 0, 0, false);
+	Node<PlayerById>* temp = playersById.find(playersById.getRoot(), tempPlayer);
 
 	if (!temp)
 	{
@@ -256,7 +256,7 @@ output_t<int> world_cup_t::get_num_played_games(int playerId)
 		return output;
 	}
 
-	int gamesPlayed = (temp->data->pStats.gamesPlayed);
+	int gamesPlayed = (temp->data->getGamesPlayed());
 	output_t<int> output(gamesPlayed);
 
 	return output;
@@ -264,8 +264,31 @@ output_t<int> world_cup_t::get_num_played_games(int playerId)
 
 output_t<int> world_cup_t::get_team_points(int teamId)
 {
-	// TODO: Your code goes here
-	return 30003;
+	if (teamId <= 0)
+	{
+		return output_t<int>(StatusType::INVALID_INPUT);
+	}
+
+	Node<Team>* team = findTeam(teamId, true);
+	int points = 0;
+
+	if (!team && !(findTeam(teamId, true)))
+	{
+		return output_t<int>(StatusType::FAILURE);
+	}
+
+	if (findTeam(teamId, true) != nullptr)
+	{
+		points = findTeam(teamId, true)->data->getTeamPoints();
+	}
+	else if (team != nullptr)
+	{
+		points = team->data->getTeamPoints();
+	}
+	
+	output_t<int> res(points);
+	
+	return res;
 }
 
 StatusType world_cup_t::unite_teams(int teamId1, int teamId2, int newTeamId)
@@ -285,9 +308,31 @@ output_t<int> world_cup_t::get_top_scorer(int teamId)
 
 output_t<int> world_cup_t::get_all_players_count(int teamId)
 {
-	// TODO: Your code goes here
-	static int i = 0;
-	return (i++ == 0) ? 11 : 2;
+	if (teamId == 0)
+	{
+		return output_t<int>(StatusType::INVALID_INPUT);
+	}
+	else if (teamId < 0)
+	{
+		int totalPlayers = playersById.getNodesNum();
+		return output_t<int>(totalPlayers);
+	}
+	else //teamId > 0
+	{
+		Node<Team>* team = findTeam(teamId, false);
+		int totalPlayersInTeam = 0;
+
+		if (team == nullptr && findTeam(teamId, true) == nullptr)
+		{
+			return output_t<int>(StatusType::FAILURE);
+		}
+		else if (team != nullptr)
+		{
+			totalPlayersInTeam = team->data->getPlayersCount();
+		}
+		
+		return output_t<int>(totalPlayersInTeam);
+	}
 }
 
 StatusType world_cup_t::get_all_players(int teamId, int* const output)
