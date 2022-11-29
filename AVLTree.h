@@ -29,6 +29,9 @@ private:
 	Node<T>* insertNode(Node<T>* root, T& data);
 	Node<T>* removeNode(Node<T>*, T& data);
 	Node<T>* copyNodes(Node<T>* node);
+	void mergeArrays(T* const arr1, int size1, T* const arr2, int size2, T* const newArr);
+	Node<T>* mergeTreesRecu(int left, int right, Node<T>* root, T* const newArr);
+
 public:
 	AVLTree() : root(nullptr), numOfNodes(0) {}
 	AVLTree(const AVLTree& other);
@@ -48,7 +51,7 @@ public:
 	Node<T>* getRoot() const;
 	void inOrder(Node<T>* root, T* const output, int& index) const;
 	void inOrderMinToMax(Node<T>* node, T* min, T* max, T* const output, int& index) const;
-	void mergeTrees();
+	void mergeTrees(T* const arr1, int size1, T* const arr2, int size2, T* const newArr);
 
 };
 
@@ -425,6 +428,51 @@ inline Node<T>* AVLTree<T>::copyNodes(Node<T>* node)
 }
 
 template<class T>
+inline void AVLTree<T>::mergeArrays(T* const arr1, int size1, T* const arr2, int size2, T* const newArr)
+{
+	int i = 0, j = 0, k = 0;
+
+	while (i < size1 && j < size2)
+	{
+		if (arr1[i] < arr2[j])
+		{
+			newArr[k] = arr1[i++];
+		}
+		else
+		{
+			newArr[k] = arr2[j++];
+		}
+		k++;
+	}
+
+	while (i < size1)
+	{
+		newArr[k++] = arr1[i++];
+	}
+	
+	while(j < size2)
+	{
+		newArr[k++] = arr2[j++];
+	}
+}
+
+template<class T>
+inline Node<T>* AVLTree<T>::mergeTreesRecu(int left, int right, Node<T>* root, T* const newArr)
+{
+	if (right < left)
+	{
+		return nullptr;
+	}
+
+	int mid = (left + right) / 2;
+	root = new Node<T>(newArr[mid]);
+	root->left = mergeTreesRecu(left, mid - 1, root->left, newArr);
+	root->right = mergeTreesRecu(mid + 1, right, root->right, newArr);
+
+	return root;
+}
+
+template<class T>
 inline void AVLTree<T>::inOrder(Node<T>* node ,T* const output, int& index) const
 {
 	if (node == nullptr)
@@ -465,6 +513,17 @@ inline void AVLTree<T>::inOrderMinToMax(Node<T>* node, T* min, T* max, T* const 
 	{
 		inOrderMinToMax(node->left, min, max, output, index);
 	}
+}
+
+template<class T>
+inline void AVLTree<T>::mergeTrees(T* const arr1, int size1, T* const arr2, int size2, T* const newArr)
+{
+	mergeArrays(arr1, size1, arr2, size2, newArr);
+
+	Node<T>* root = nullptr;
+	Node<T>* newRoot = mergeTreesRecu(0, size1 + size2 - 1, root, newArr);
+	this->numOfNodes = size1 + size2;
+	this->root = newRoot;
 }
 
 #endif
