@@ -12,6 +12,9 @@ public:
 
 	void updateStats(int gamesPlayed, int scoredGoals, int cardsReceieved);
 	int getTeamId() const;
+	int getPlayerId() const;
+
+	int getGamesPlayed() const;
 	virtual bool operator<(const PlayerByStats& other) const;
 	virtual bool operator>(const PlayerByStats& other) const;
 	bool operator==(const PlayerByStats& other) const;

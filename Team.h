@@ -38,6 +38,7 @@ public:
 	void getPlayersDetails(PlayerByStats* const out);
 	bool hasGoalKeeper() const;
 	void updatePlayerStatsInTeam(PlayerByStats& p, int playerId, int gamesToAdd, int goalsToAdd, int cardsToAdd);
+	void inOrderPlayers(int* sortedPlayers, PlayerByStats* const output) const;
 	bool operator<(const Team& other) const;
 	bool operator>(const Team& other) const;
 	bool operator==(const Team& other) const;

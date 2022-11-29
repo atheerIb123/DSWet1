@@ -52,7 +52,7 @@ bool Team::removePlayer(int playerId)
 
     Node<PlayerByStats>* toRemoveSt = teamTreeByStats.remove(*(tempSt->data));
     Node<PlayerById>* toRemoveId = teamTreeById.remove(*(tempId->data));
-    
+
     if (this->totalPlayers == 1 && (toRemoveId != nullptr || toRemoveSt != nullptr))
     {
         return false;
@@ -91,6 +91,16 @@ void Team::updatePlayerStatsInTeam(PlayerByStats& p, int playerId, int gamesToAd
     this->totalCards += cardsToAdd;
     this->totalGoals += goalsToAdd;
 
+}
+
+void Team::inOrderPlayers(int* output,PlayerByStats* const playersOutPut) const
+{
+    int index = 0;
+    teamTreeByStats.inOrder(teamTreeByStats.getRoot(), playersOutPut, index);
+    for (int i = 0; i < teamTreeByStats.getNodesNum(); i++)
+    {
+        output[i] = playersOutPut[i].getPlayerId();
+    }
 }
 
 int Team::getTeamPoints() const

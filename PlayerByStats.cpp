@@ -27,6 +27,16 @@ int PlayerByStats::getTeamId() const
 	return this->teamId;
 }
 
+int PlayerByStats::getPlayerId() const
+{
+	return this->playerId;
+}
+
+int PlayerByStats::getGamesPlayed() const
+{
+	return gamesPlayed;
+}
+
 bool PlayerByStats::operator<(const PlayerByStats& other) const
 {
 	if (this->goals < other.goals)
