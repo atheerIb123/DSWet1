@@ -1,18 +1,18 @@
 #include "PlayerById.h"
-#include "PlayerById.h"
 
 PlayerById::PlayerById()
 {
 	playerId = 0;
-	teamId = 0;
+	teamId = nullptr;
 	gamesPlayed = 0;
 	goals = 0;
 	cards = 0;
 	goalKeeper = 0;
+	gamesPlayedWithTeam = nullptr;
 }
 
-PlayerById::PlayerById(int playerId, int teamId, int gamesPlayed, int goals, int cards, bool goalKeeper) :
-	playerId(playerId), teamId(teamId), gamesPlayed(gamesPlayed), goals(goals), cards(cards), goalKeeper(goalKeeper)
+PlayerById::PlayerById(int playerId, std::shared_ptr<int> teamId, int gamesPlayed, int goals, int cards, bool goalKeeper) :
+	playerId(playerId), teamId(std::move(teamId)), gamesPlayed(gamesPlayed), goals(goals), cards(cards), goalKeeper(goalKeeper), gamesPlayedWithTeam(nullptr)
 {
 }
 
@@ -25,7 +25,12 @@ void PlayerById::updateStats(int gamesPlayed, int scoredGoals, int cardsReceieve
 
 int PlayerById::getTeamId() const
 {
-	return this->teamId;
+	return *(this->teamId);
+}
+
+void PlayerById::setTeamId(int newId)
+{
+	*(this->teamId) = newId;
 }
 
 int PlayerById::getGoalsCount() const
@@ -40,12 +45,22 @@ int PlayerById::getCardsCount() const
 
 int PlayerById::getGamesPlayed() const
 {
-	return this->gamesPlayed;
+	if (gamesPlayedWithTeam != nullptr)
+	{
+		return gamesPlayed + *gamesPlayedWithTeam;
+	}
+
+	return gamesPlayed;
 }
 
 bool PlayerById::isGoalKeeper() const
 {
 	return this->goalKeeper;
+}
+
+void PlayerById::setGamesPlayedWithTeam(std::shared_ptr<int> games)
+{
+	this->gamesPlayedWithTeam = games;
 }
 
 bool PlayerById::operator<(const PlayerById& other) const

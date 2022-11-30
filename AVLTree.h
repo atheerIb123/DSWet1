@@ -45,9 +45,9 @@ public:
 	Node<T>* balanceTree(Node<T>* root); //a helper method for rotations
 	int getBalance(Node<T>* node);
 	int getNodesNum() const;
-	Node<T>* insert(T& data);
+	Node<T>* insert(T* data);
 	Node<T>* find(Node<T>* root, const T& data);
-	Node<T>* remove(T& data);
+	Node<T>* remove(T* data);
 	Node<T>* getRoot() const;
 	void inOrder(Node<T>* root, T* const output, int& index) const;
 	void inOrderMinToMax(Node<T>* node, T* min, T* max, T* const output, int& index) const;
@@ -305,14 +305,14 @@ inline Node<T>* AVLTree<T>::insertNode(Node<T>* node, T& data)
 }
 
 template<class T>
-inline Node<T>* AVLTree<T>::insert(T& data)
+inline Node<T>* AVLTree<T>::insert(T* data)
 {
-	if (find(this->root, data))
+	if (find(this->root,* data))
 	{
 		return nullptr;
 	}
 
-	return insertNode(this->root, data);
+	return insertNode(this->root, *data);
 }
 
 template<class T>
@@ -341,14 +341,14 @@ inline Node<T>* AVLTree<T>::find(Node<T>* node, const T& data)
 }
 
 template<class T>
-inline Node<T>* AVLTree<T>::remove(T& data)
+inline Node<T>* AVLTree<T>::remove(T* data)
 {
-	if (!find(this->root, data))
+	if (!find(this->root, *data))
 	{
 		return nullptr;
 	}
 
-	return removeNode(this->root, data);
+	return removeNode(this->root, *data);
 }
 
 template<class T>

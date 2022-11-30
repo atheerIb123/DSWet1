@@ -18,6 +18,18 @@ Node<Team>* world_cup_t::findTeam(int teamId, bool emptyFlag)
 	return team;
 }
 
+void world_cup_t::updateTeamId(Node<PlayerById>* root, int newTeamId)
+{
+	if (!root)
+	{
+		return;
+	}
+
+	updateTeamId(root->left, newTeamId);
+	root->data->setTeamId(newTeamId);
+	updateTeamId(root->right, newTeamId);
+}
+
 world_cup_t::world_cup_t()
 {
 	// TODO: Your code goes here
@@ -29,6 +41,7 @@ world_cup_t::world_cup_t()
 //}
 
 
+
 StatusType world_cup_t::add_team(int teamId, int points)
 {
 	if (teamId <= 0 || points < 0)
@@ -38,11 +51,12 @@ StatusType world_cup_t::add_team(int teamId, int points)
 
 	Team newTeam(teamId, points);
 
-	if (!teamsInSystem.insert(newTeam))
+	if (!teamsInSystem.insert(&newTeam))
 	{
 		return StatusType::FAILURE;
 	}
 
+	teamsInSystem.find(teamsInSystem.getRoot(), newTeam)->data->setGamesPlayed();
 
 	this->totalTeams++;
 
@@ -58,13 +72,13 @@ StatusType world_cup_t::remove_team(int teamId)
 
 	Team tempTeam(teamId, 0);
 
-	if (!teamsInSystem.find(teamsInSystem.getRoot(), tempTeam) || teamsInSystem.find(teamsInSystem.getRoot(), tempTeam)->data->getPlayersCount() >= 1)
+	if (!teamsInSystem.find(teamsInSystem.getRoot(), tempTeam) || nonEmptyTeams.find(teamsInSystem.getRoot(), tempTeam)->data->getPlayersCount() >= 1)
 	{
 		return StatusType::FAILURE;
 	}
 
 	int numOfTeams = teamsInSystem.getNodesNum();
-	teamsInSystem.remove(tempTeam);
+	teamsInSystem.remove(&tempTeam);
 
 	if (teamsInSystem.getNodesNum() == numOfTeams)
 	{
@@ -88,6 +102,12 @@ StatusType world_cup_t::add_player(int playerId, int teamId, int gamesPlayed,
 	{
 		return StatusType::FAILURE;
 	}
+	
+	std::shared_ptr<int> team_id = std::make_shared<int>();
+	*team_id = teamId;
+
+	PlayerById newPlayerId(playerId, team_id, gamesPlayed, goals, cards, goalKeeper);
+	PlayerByStats newPlayerSt(playerId, team_id, gamesPlayed, goals, cards, goalKeeper);
 
 	Node<Team>* team = findTeam(teamId, true);
 
@@ -98,48 +118,46 @@ StatusType world_cup_t::add_player(int playerId, int teamId, int gamesPlayed,
 
 	if (nonEmptyTeams.find(nonEmptyTeams.getRoot(), *(team->data)) == nullptr)
 	{
-		if (team->data->insertPlayer(playerId, gamesPlayed, goals, cards, goalKeeper) == false)
+		if (team->data->insertPlayer(&newPlayerSt, &newPlayerId) == false)
 		{
 			return StatusType::FAILURE;
 		}
 
-		nonEmptyTeams.insert(*(team->data));
+		nonEmptyTeams.insert(team->data);
+		findTeam(teamId, true)->data->removePlayer(playerId);
 	}
 	else
 	{
 		Node<Team>* tempTeam = findTeam(teamId, false); //Find it in the nonEmptyTeams tree
 
-		if (tempTeam->data->insertPlayer(playerId, gamesPlayed, goals, cards, goalKeeper) == false)
+		if (tempTeam->data->insertPlayer(&newPlayerSt, &newPlayerId) == false)
 		{
 			return StatusType::FAILURE;
 		}
 	}
 
 	//Adding the player to the players' trees
-	PlayerById newPlayerId(playerId, teamId, gamesPlayed, goals, cards, goalKeeper);
-	PlayerByStats newPlayerSt(playerId, teamId, gamesPlayed, goals, cards, goalKeeper);
-
 	if (playersById.find(playersById.getRoot(), newPlayerId) || playersByStats.find(playersByStats.getRoot(), newPlayerSt))
 	{
 		return StatusType::FAILURE;
 	}
 
-	if (!playersByStats.insert(newPlayerSt) || !playersById.insert(newPlayerId))
+	if (!playersByStats.insert(&newPlayerSt) || !playersById.insert(&newPlayerId))
 	{
 		return StatusType::FAILURE;
 	}
 
-
+	
 	//Checking if the team is fit to join the active teams tree
 	Node<Team>* tempTeam = findTeam(teamId, false);
 	if (tempTeam->data->getPlayersCount() >= 11 && tempTeam->data->hasGoalKeeper())
 	{
 		Node<Team>* currentTeam = activeTeams.find(activeTeams.getRoot(), *team->data);
 		if (currentTeam == nullptr)
-			activeTeams.insert(*team->data);
+			activeTeams.insert(team->data);
 		else
 		{
-			currentTeam->data->insertPlayer(playerId, gamesPlayed, goals, cards, goalKeeper);
+			currentTeam->data->insertPlayer(&newPlayerSt, &newPlayerId);
 		}
 	}
 
@@ -163,14 +181,16 @@ StatusType world_cup_t::remove_player(int playerId)
 
 	int teamIdOfPlayer = tempPlayer->data->getTeamId();
 
-	PlayerByStats tempSt(playerId, tempPlayer->data->getTeamId(), tempPlayer->data->getGamesPlayed(), tempPlayer->data->getGoalsCount(), tempPlayer->data->getCardsCount(), tempPlayer->data->isGoalKeeper());
-
+	PlayerByStats pStats(playerId, nullptr, tempPlayer->data->getGamesPlayed(), tempPlayer->data->getGoalsCount(), tempPlayer->data->getCardsCount(), tempPlayer->data->isGoalKeeper());
+	Node<PlayerByStats>* tempSt = playersByStats.find(playersByStats.getRoot(), pStats);
+	
 	int amountOfPlayers[2] = { 0 };
+	
 	amountOfPlayers[0] = playersById.getNodesNum();
 	amountOfPlayers[1] = playersByStats.getNodesNum();
 
-	playersById.remove(*tempPlayer->data);
-	playersByStats.remove(tempSt);
+	playersById.remove(tempPlayer->data);
+	playersByStats.remove(tempSt->data);
 
 	if (playersById.getNodesNum() == amountOfPlayers[0] || playersByStats.getNodesNum() == amountOfPlayers[1])
 	{
@@ -178,7 +198,7 @@ StatusType world_cup_t::remove_player(int playerId)
 	}
 
 	Node<Team>* currentTeam = findTeam(teamIdOfPlayer, false);
-
+	
 	if (currentTeam->data->removePlayer(playerId) == false)
 	{
 		return StatusType::FAILURE;
@@ -186,7 +206,7 @@ StatusType world_cup_t::remove_player(int playerId)
 
 	if (currentTeam != nullptr && currentTeam->data->getPlayersCount() == 0)
 	{
-		nonEmptyTeams.remove(*currentTeam->data);
+		nonEmptyTeams.remove(currentTeam->data);
 	}
 
 	if (currentTeam != nullptr)
@@ -199,7 +219,7 @@ StatusType world_cup_t::remove_player(int playerId)
 		currentTeam->data->removePlayer(playerId);
 		if (currentTeam->data->getPlayersCount() < 11 || !currentTeam->data->hasGoalKeeper())
 		{
-			activeTeams.remove(*currentTeam->data);
+			activeTeams.remove(currentTeam->data);
 		}
 	}
 
@@ -221,16 +241,15 @@ StatusType world_cup_t::update_player_stats(int playerId, int gamesPlayed,
 		return StatusType::FAILURE;
 	}
 
-	PlayerByStats p(playerId, currentPlayer->data->getTeamId(), currentPlayer->data->getGamesPlayed(), currentPlayer->data->getGoalsCount(), currentPlayer->data->getCardsCount(), currentPlayer->data->isGoalKeeper());
-	currentPlayer->data->updateStats(gamesPlayed, scoredGoals, cardsReceived);
-
-
+	PlayerByStats p(playerId, nullptr, currentPlayer->data->getGamesPlayed(), currentPlayer->data->getGoalsCount(), currentPlayer->data->getCardsCount(), currentPlayer->data->isGoalKeeper());
 	Node<PlayerByStats>* playerToUpdate = playersByStats.find(playersByStats.getRoot(), p);
-	playerToUpdate->data->updateStats(gamesPlayed, scoredGoals, cardsReceived);
 
+	currentPlayer->data->updateStats(gamesPlayed, scoredGoals, cardsReceived);
+	playerToUpdate->data->updateStats(gamesPlayed, scoredGoals, cardsReceived);
+	
 
 	Node<Team>* currentTeam = findTeam(currentPlayer->data->getTeamId(), false);
-	currentTeam->data->updatePlayerStatsInTeam(p, playerId, gamesPlayed, scoredGoals, cardsReceived);
+	currentTeam->data->updatePlayerStatsInTeam(*playerToUpdate->data, playerId, gamesPlayed, scoredGoals, cardsReceived);
 
 
 
@@ -238,17 +257,50 @@ StatusType world_cup_t::update_player_stats(int playerId, int gamesPlayed,
 	currentTeam = activeTeams.find(activeTeams.getRoot(), tempTeam);
 	if (currentTeam != nullptr)
 	{
-		currentTeam->data->updatePlayerStatsInTeam(p, playerId, gamesPlayed, scoredGoals, cardsReceived);
+		currentTeam->data->updatePlayerStatsInTeam(*playerToUpdate->data, playerId, gamesPlayed, scoredGoals, cardsReceived);
 	}
-
-
 
 	return StatusType::SUCCESS;
 }
 
 StatusType world_cup_t::play_match(int teamId1, int teamId2)
 {
-	// TODO: Your code goes here
+	if (teamId1 <= 0 || teamId2 <= 0 || teamId1 == teamId2)
+	{
+		return StatusType::INVALID_INPUT;
+	}
+	
+	Team temp1(teamId1, 0);
+	Team temp2(teamId2, 0);
+	Node<Team>* activeTeam1 = activeTeams.find(activeTeams.getRoot(), temp1);
+	Node<Team>* activeTeam2 = activeTeams.find(activeTeams.getRoot(), temp2);
+	
+	if (!activeTeam1 || !activeTeam2)
+	{
+		return StatusType::FAILURE;
+	}
+	
+	if (activeTeam1->data->getTeamPower() < activeTeam2->data->getTeamPower())
+	{
+		activeTeam2->data->addPoints(activeTeam1->data->getTeamPoints());
+		findTeam(teamId2, false)->data->addPoints(activeTeam1->data->getTeamPoints());
+	}
+	else if (activeTeam1->data->getTeamPower() > activeTeam2->data->getTeamPower())
+	{
+		activeTeam1->data->addPoints(activeTeam2->data->getTeamPoints());
+		findTeam(teamId1, false)->data->addPoints(activeTeam2->data->getTeamPoints());
+	}
+	else
+	{
+		activeTeam1->data->addPoints(1);
+		activeTeam2->data->addPoints(1);
+		findTeam(teamId1, false)->data->addPoints(1);
+		findTeam(teamId2, false)->data->addPoints(1);
+	}
+
+	activeTeam1->data->incrementGamesPlayed();
+	activeTeam2->data->incrementGamesPlayed();
+	
 	return StatusType::SUCCESS;
 }
 
@@ -292,18 +344,113 @@ output_t<int> world_cup_t::get_team_points(int teamId)
 	{
 		points = team->data->getTeamPoints();
 	}
-
+	
 	output_t<int> res(points);
-
+	
 	return res;
 }
 
 StatusType world_cup_t::unite_teams(int teamId1, int teamId2, int newTeamId)
 {
+	if (newTeamId <= 0 || teamId1 <= 0 || teamId2 <= 0)
+	{
+		return StatusType::FAILURE;
+	}
+	if (teamId1 == teamId2)
+	{
+		return StatusType::FAILURE;
+	}
 
+	if (!findTeam(teamId1, true) || !findTeam(teamId2, true))
+	{
+		return StatusType::FAILURE;
+	}
 
+	if (findTeam(newTeamId, true))
+	{
+		if (findTeam(newTeamId, true)->data->getID() != teamId1 && findTeam(newTeamId, true)->data->getID() != teamId2)
+		{
+			return StatusType::FAILURE;
+		}
+	}
 
+	Node<Team>* team1 = findTeam(teamId1, false);
+	Node<Team>* team2 = findTeam(teamId2, false);
 
+	if (team2 == nullptr)
+	{
+		if (team1 != nullptr)
+		{
+			team1->data->setNewId(newTeamId);
+
+			Team activeTeamTemp(teamId1, 0);
+			Node<Team>* activeTeam1 = activeTeams.find(activeTeams.getRoot(), activeTeamTemp);
+			
+			updateTeamId(team1->data->getRootOfIds(), newTeamId);
+
+			teamsInSystem.find(teamsInSystem.getRoot(), activeTeamTemp)->data->setNewId(newTeamId);
+			if (activeTeam1 != nullptr)
+			{
+				activeTeam1->data->setNewId(newTeamId);
+			}
+
+		}
+		else
+		{
+			findTeam(teamId1, false)->data->setNewId(teamId1);
+		}
+		remove_team(teamId2);
+	}
+	else
+	{
+		Team activeTeamTemp2(teamId2, 0);
+		Node<Team>* activeTeam2 = activeTeams.find(activeTeams.getRoot(), activeTeamTemp2);
+		
+		if (team1 == nullptr)
+		{
+			team2->data->setNewId(newTeamId);
+			updateTeamId(team2->data->getRootOfIds(), newTeamId);
+			findTeam(teamId2, true)->data->setNewId(newTeamId);
+
+			if (activeTeam2 != nullptr)
+			{
+				activeTeam2->data->setNewId(newTeamId);
+			}
+
+			remove_team(teamId1);
+		}
+		else
+		{
+			Node<Team>* activeTeam = activeTeams.find(activeTeams.getRoot(), *team1->data);
+
+			team1->data->mergeTeams(*team2->data);
+			team1->data->setNewId(newTeamId);
+			
+			updateTeamId(team1->data->getRootOfIds(), newTeamId);
+
+			findTeam(teamId1, true)->data->setNewId(newTeamId);
+
+			if (activeTeam == nullptr && team1->data->getPlayersCount() >= 11 && team1->data->hasGoalKeeper())
+			{
+				activeTeams.insert(team1->data);
+			}
+			else if (activeTeam != nullptr)
+			{
+				activeTeams.remove(activeTeam->data);
+				activeTeams.insert(team1->data);
+
+			}
+
+			if (activeTeam2 != nullptr)
+			{
+				activeTeams.remove(activeTeam2->data);
+			}
+
+			nonEmptyTeams.remove(team2->data);
+			teamsInSystem.remove(findTeam(teamId2, true)->data);
+			this->totalTeams--;
+		}
+	}
 	return StatusType::SUCCESS;
 }
 
@@ -352,7 +499,7 @@ output_t<int> world_cup_t::get_all_players_count(int teamId)
 		{
 			totalPlayersInTeam = team->data->getPlayersCount();
 		}
-
+		
 		return output_t<int>(totalPlayersInTeam);
 	}
 }
@@ -369,12 +516,12 @@ StatusType world_cup_t::get_all_players(int teamId, int* const output)
 			return StatusType::FAILURE;
 		int index = 0;
 		PlayerByStats* const playersOutput = new PlayerByStats[playersByStats.getNodesNum()];
-		playersByStats.inOrder(playersByStats.getRoot(), playersOutput,index);
+		playersByStats.inOrder(playersByStats.getRoot(), playersOutput, index);
 		for (int i = 0; i < playersByStats.getNodesNum(); i++)
 		{
 			output[i] = playersOutput[i].getPlayerId();
 		}
-		delete playersOutput;
+		delete[] playersOutput;
 	}
 	else //teamId > 0
 	{
@@ -385,7 +532,7 @@ StatusType world_cup_t::get_all_players(int teamId, int* const output)
 		}
 		PlayerByStats* const playersOutput = new PlayerByStats[currentTeam->data->getPlayersCount()];
 		currentTeam->data->inOrderPlayers(output, playersOutput);
-		delete playersOutput;
+		delete[] playersOutput;
 	}
 	return StatusType::SUCCESS;
 }
@@ -398,6 +545,10 @@ output_t<int> world_cup_t::get_closest_player(int playerId, int teamId)
 
 output_t<int> world_cup_t::knockout_winner(int minTeamId, int maxTeamId)
 {
+	//take care of statusTypes
+	if (minTeamId < 0 || maxTeamId < 0 || minTeamId > maxTeamId)
+		return StatusType::INVALID_INPUT;
+
 	Team* const participatingTeams = new Team[activeTeams.getNodesNum()];
 	Team tempMin(minTeamId, 0), tempMax(maxTeamId, 0);
 	Node<Team>* minNode = activeTeams.find(activeTeams.getRoot(), tempMin);
@@ -407,6 +558,7 @@ output_t<int> world_cup_t::knockout_winner(int minTeamId, int maxTeamId)
 	activeTeams.inOrderMinToMax(activeTeams.getRoot(), minNode->data, maxNode->data, participatingTeams, index);
 	if (index == 0)
 		return StatusType::FAILURE;
+
 	return(knockout_winner_aux(minTeamId, maxTeamId, participatingTeams, index));
 
 }
@@ -421,17 +573,43 @@ output_t<int> world_cup_t::knockout_winner_aux(int minTeamId, int maxTeamId, Tea
 		return result;
 	}
 	int j = 0;
+	int firstResult = 0;
+	int secondResult = 0;
+
 	for (int i = 0; i < size; i += 2)
 	{
-		//warning: if size % 2 = 1 the last team dont play 
-		//participatingTeams[i].addPoints(participatingTeams[i - 1].getTeamPoints());
-//		get_all_players(participatingTeams[i].getID(),)
-	//	remainingTeams[j] = participatingTeams[i];
+		if (i % 2 == 0 && i == size - 1)
+		{
+			remainingTeams[j] = participatingTeams[i];
+			break;
+		}
+
+		firstResult = participatingTeams[i].getTeamPower();
+		secondResult = participatingTeams[i + 1].getTeamPower();
+
+		if (firstResult > secondResult)
+		{
+			participatingTeams[i].addPoints(3 + participatingTeams[i + 1].getTeamPoints());
+			remainingTeams[j] = participatingTeams[i];
+		}
+		else //draw or second team won
+		{
+			participatingTeams[i + 1].addPoints(3 + participatingTeams[i].getTeamPoints());
+			remainingTeams[j] = participatingTeams[i + 1];
+		}
 		j++;
 	}
-
-	output_t<int> winner = knockout_winner_aux(minTeamId, maxTeamId, remainingTeams, size / 2);
-	delete remainingTeams;
-	return winner;
-
+	int winnerId;
+	if (size % 2 == 0)
+	{
+		output_t<int> winner = knockout_winner_aux(minTeamId, maxTeamId, remainingTeams, j);
+		winnerId = winner.ans();
+	}
+	else
+	{
+		output_t<int> winner = knockout_winner_aux(minTeamId, maxTeamId, remainingTeams, j + 1);
+		winnerId = winner.ans();
+	}
+	delete[] remainingTeams;
+	return output_t<int>(winnerId);
 }

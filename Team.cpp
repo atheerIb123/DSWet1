@@ -1,45 +1,50 @@
 #include "Team.h"
 
-Team::Team(int teamId, int points) : teamId(teamId), points(points)
+Team::Team(int teamId, int points) : points(points)
 {
+    this->teamId = teamId;
     this->goalKeepers[0] = 0;
     this->goalKeepers[1] = 0;
     this->topScorerId = 0;
     this->totalCards = 0;
-    this->totalGamesPlayed = new int(0);
+    this->totalGamesPlayed = std::make_shared<int>(0);
     this->totalGoals = 0;
     this->totalPlayers = 0;
 }
 
-bool Team::insertPlayer(int playerId, int gamesPlayed, int goals, int cards, bool gk)
+Team::~Team()
 {
-    PlayerByStats newPlayerSt(playerId, this->teamId, gamesPlayed, goals, cards, gk);
-    PlayerById newPlayerId(playerId, this->teamId, gamesPlayed, goals, cards, gk);
+}
 
+bool Team::insertPlayer(PlayerByStats* newPlayerSt, PlayerById* newPlayerId)
+{
     if (!teamTreeByStats.insert(newPlayerSt) || !teamTreeById.insert(newPlayerId))
     {
         return false;
     }
-
-    if (gk == true)
+    
+    if (newPlayerId->isGoalKeeper() == true)
     {
         this->goalKeepers[0] = 1;
         this->goalKeepers[1]++;
     }
 
     this->totalPlayers++;
-    this->totalCards += cards;
-    this->totalGoals += goals;
+    this->totalCards += newPlayerId->getCardsCount();
+    this->totalGoals += newPlayerId->getGoalsCount();
+    
+    newPlayerSt->setGamesPlayedWithTeam(this->totalGamesPlayed);
+    newPlayerId->setGamesPlayedWithTeam(this->totalGamesPlayed);
 
     return true;
 }
 
 bool Team::removePlayer(int playerId)
 {
-    PlayerById tempPlayerId(playerId, this->teamId, 0, 0, 0, false);
+    PlayerById tempPlayerId(playerId, nullptr, 0, 0, 0, false);
 
     Node<PlayerById>* tempId = teamTreeById.find(teamTreeById.getRoot(), tempPlayerId);
-    PlayerByStats tempPlayerSt(playerId, this->teamId, tempId->data->getGamesPlayed(), tempId->data->getGoalsCount(), tempId->data->getCardsCount(), tempId->data->isGoalKeeper());
+    PlayerByStats tempPlayerSt(playerId, nullptr, tempId->data->getGamesPlayed(), tempId->data->getGoalsCount(), tempId->data->getCardsCount(), tempId->data->isGoalKeeper());
     Node<PlayerByStats>* tempSt = teamTreeByStats.find(teamTreeByStats.getRoot(), tempPlayerSt);
 
     if (!tempSt || !tempId)
@@ -50,8 +55,8 @@ bool Team::removePlayer(int playerId)
     int goals = tempId->data->getGoalsCount(), cards = tempId->data->getCardsCount();
     bool gk = tempId->data->isGoalKeeper();
 
-    Node<PlayerByStats>* toRemoveSt = teamTreeByStats.remove(*(tempSt->data));
-    Node<PlayerById>* toRemoveId = teamTreeById.remove(*(tempId->data));
+    Node<PlayerByStats>* toRemoveSt = teamTreeByStats.remove(tempSt->data);
+    Node<PlayerById>* toRemoveId = teamTreeById.remove(tempId->data);
 
     if (this->totalPlayers == 1 && (toRemoveId != nullptr || toRemoveSt != nullptr))
     {
@@ -93,14 +98,67 @@ void Team::updatePlayerStatsInTeam(PlayerByStats& p, int playerId, int gamesToAd
 
 }
 
-void Team::inOrderPlayers(int* output,PlayerByStats* const playersOutPut) const
+void Team::inOrderPlayers(int* output, PlayerByStats* const playersOutPut) const
 {
     int index = 0;
     teamTreeByStats.inOrder(teamTreeByStats.getRoot(), playersOutPut, index);
-    for (int i = 0; i < teamTreeByStats.getNodesNum(); i++)
+    
+    if (output != nullptr)
     {
-        output[i] = playersOutPut[i].getPlayerId();
+        for (int i = 0; i < teamTreeByStats.getNodesNum(); i++)
+        {
+            output[i] = playersOutPut[i].getPlayerId();
+        }
     }
+}
+
+void Team::inOrderPlayers(PlayerById* const output) const
+{
+    int index = 0;
+    teamTreeById.inOrder(teamTreeById.getRoot(), output, index);
+}
+
+Node<PlayerById>* Team::getRootOfIds() const
+{
+    return this->teamTreeById.getRoot();
+}
+
+void Team::mergeTeams(Team& other)
+{
+    PlayerById* const firstTeamPlayers = new PlayerById[this->totalPlayers];
+    PlayerById* const secondTeamPlayers = new PlayerById[other.getPlayersCount()];
+    PlayerById* const mergedTeamArr = new PlayerById[this->totalPlayers + other.getPlayersCount()];
+
+    int index = 0;
+    this->teamTreeById.inOrder(teamTreeById.getRoot(), firstTeamPlayers, index);
+    other.inOrderPlayers(secondTeamPlayers);
+    teamTreeById.mergeTrees(firstTeamPlayers, this->totalPlayers, secondTeamPlayers, other.getPlayersCount(), mergedTeamArr);
+    
+    PlayerByStats* const first = new PlayerByStats[this->totalPlayers];
+    PlayerByStats* const second = new PlayerByStats[other.getPlayersCount()];
+    PlayerByStats* const mergedTeam = new PlayerByStats[this->totalPlayers + other.getPlayersCount()];
+    index = 0;
+    this->teamTreeByStats.inOrder(teamTreeByStats.getRoot(), first, index);
+    other.inOrderPlayers(nullptr, second);
+    teamTreeByStats.mergeTrees(first, this->totalPlayers, second, other.getPlayersCount(), mergedTeam);
+
+    this->totalPlayers = teamTreeById.getNodesNum();
+
+    delete[] firstTeamPlayers;
+    delete[] secondTeamPlayers;
+    delete[] mergedTeamArr;
+    delete[] first;
+    delete[] second;
+    delete[] mergedTeam;
+}
+
+void Team::incrementGamesPlayed()
+{
+    totalGamesPlayed.operator*()++;
+}
+
+void Team::setGamesPlayed()
+{
 }
 
 int Team::getTeamPoints() const
@@ -132,6 +190,11 @@ int Team::getPlayersCount() const
 int Team::getID() const
 {
     return this->teamId;
+}
+
+void Team::setNewId(int id)
+{
+    this->teamId = id;
 }
 
 void Team::getPlayersDetails(PlayerByStats* const out)
