@@ -45,7 +45,7 @@ int PlayerById::getCardsCount() const
 
 int PlayerById::getGamesPlayed() const
 {
-	if (gamesPlayedWithTeam != nullptr)
+	if (gamesPlayedWithTeam.get() != nullptr)
 	{
 		return gamesPlayed + *gamesPlayedWithTeam;
 	}

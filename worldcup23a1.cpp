@@ -154,7 +154,7 @@ StatusType world_cup_t::add_player(int playerId, int teamId, int gamesPlayed,
 	{
 		Node<Team>* currentTeam = activeTeams.find(activeTeams.getRoot(), *team->data);
 		if (currentTeam == nullptr)
-			activeTeams.insert(team->data);
+			activeTeams.insert(tempTeam->data);
 		else
 		{
 			currentTeam->data->insertPlayer(&newPlayerSt, &newPlayerId);

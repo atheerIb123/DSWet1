@@ -41,7 +41,7 @@ void PlayerByStats::setTeamId(int newId)
 
 int PlayerByStats::getGamesPlayed() const
 {
-	if (gamesPlayedWithTeam != nullptr)
+	if (gamesPlayedWithTeam.get() != nullptr)
 	{
 		return gamesPlayed + *gamesPlayedWithTeam;
 	}
