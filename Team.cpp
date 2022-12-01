@@ -90,12 +90,24 @@ void Team::updatePlayerStatsInTeam(PlayerByStats& p, int playerId, int gamesToAd
 {
     PlayerById tempPlayer(playerId, 0, 0, 0, 0, false);
     Node<PlayerById>* currentPlayer = teamTreeById.find(teamTreeById.getRoot(), tempPlayer);
-    currentPlayer->data->updateStats(gamesToAdd, goalsToAdd, cardsToAdd);
+
+    PlayerById tempId(*currentPlayer->data);
+    teamTreeById.remove(currentPlayer->data);
+    tempId.updateStats(gamesToAdd, goalsToAdd, cardsToAdd);
+    teamTreeById.insert(&tempId);
+
     Node<PlayerByStats>* currentPlayerByStats = teamTreeByStats.find(teamTreeByStats.getRoot(), p);
-    currentPlayerByStats->data->updateStats(gamesToAdd, goalsToAdd, cardsToAdd);
+    
+    PlayerByStats tempSt(*currentPlayerByStats->data);
+    teamTreeByStats.remove(currentPlayerByStats->data);
+    tempSt.updateStats(gamesToAdd, goalsToAdd, cardsToAdd);
+    teamTreeByStats.insert(&tempSt);
+
+    teamTreeById.find(teamTreeById.getRoot(), tempId)->data->setGamesPlayedWithTeam(this->totalGamesPlayed);
+    teamTreeByStats.find(teamTreeByStats.getRoot(), tempSt)->data->setGamesPlayedWithTeam(this->totalGamesPlayed);
+
     this->totalCards += cardsToAdd;
     this->totalGoals += goalsToAdd;
-
 }
 
 void Team::inOrderPlayers(int* output, PlayerByStats* const playersOutPut) const

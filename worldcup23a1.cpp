@@ -236,22 +236,32 @@ StatusType world_cup_t::update_player_stats(int playerId, int gamesPlayed,
 
 	PlayerById tempPlayer(playerId, 0, gamesPlayed, scoredGoals, cardsReceived, false);
 	Node<PlayerById>* currentPlayer = playersById.find(playersById.getRoot(), tempPlayer);
+
 	if (currentPlayer == nullptr)
 	{
 		return StatusType::FAILURE;
 	}
 
+	PlayerById tempId(*currentPlayer->data);
+
 	PlayerByStats p(playerId, nullptr, currentPlayer->data->getGamesPlayed(), currentPlayer->data->getGoalsCount(), currentPlayer->data->getCardsCount(), currentPlayer->data->isGoalKeeper());
 	Node<PlayerByStats>* playerToUpdate = playersByStats.find(playersByStats.getRoot(), p);
 
-	currentPlayer->data->updateStats(gamesPlayed, scoredGoals, cardsReceived);
-	playerToUpdate->data->updateStats(gamesPlayed, scoredGoals, cardsReceived);
+	/*playersById.remove(currentPlayer->data);
+	tempId.updateStats(gamesPlayed, scoredGoals, cardsReceived);
+	playersById.insert(&tempId);*/
+
+	if (playerToUpdate == nullptr)
+	{
+		return StatusType::FAILURE;
+	}
+
+	PlayerByStats tempSt(*playerToUpdate->data);
+
 	
 
-	Node<Team>* currentTeam = findTeam(currentPlayer->data->getTeamId(), false);
+	Node<Team>* currentTeam = findTeam(tempSt.getTeamId(), false);
 	currentTeam->data->updatePlayerStatsInTeam(*playerToUpdate->data, playerId, gamesPlayed, scoredGoals, cardsReceived);
-
-
 
 	Team tempTeam(currentTeam->data->getID(), 0);
 	currentTeam = activeTeams.find(activeTeams.getRoot(), tempTeam);
@@ -260,6 +270,13 @@ StatusType world_cup_t::update_player_stats(int playerId, int gamesPlayed,
 		currentTeam->data->updatePlayerStatsInTeam(*playerToUpdate->data, playerId, gamesPlayed, scoredGoals, cardsReceived);
 	}
 
+	playersById.remove(currentPlayer->data);
+	tempId.updateStats(gamesPlayed, scoredGoals, cardsReceived);
+	playersById.insert(&tempId);
+
+	playersByStats.remove(playerToUpdate->data);
+	tempSt.updateStats(gamesPlayed, scoredGoals, cardsReceived);
+	playersByStats.insert(&tempSt);
 	return StatusType::SUCCESS;
 }
 
