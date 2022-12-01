@@ -30,7 +30,8 @@ public:
 	bool removePlayer(int playerId);
 	int getTeamPoints() const;
 	void addPoints(int points);
-	int[] getTopScorer() const;
+	int getTopScorer() const;
+	int getTopScorerGoalsAmount() const;
 	int getTeamPower() const;
 	int getPlayersCount() const;
 	int getID() const;
