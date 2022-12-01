@@ -340,13 +340,13 @@ StatusType world_cup_t::play_match(int teamId1, int teamId2)
 	
 	if (activeTeam1->data->getTeamPower() < activeTeam2->data->getTeamPower())
 	{
-		activeTeam2->data->addPoints(activeTeam1->data->getTeamPoints());
-		findTeam(teamId2, false)->data->addPoints(activeTeam1->data->getTeamPoints());
+		activeTeam2->data->addPoints(3);
+		findTeam(teamId2, false)->data->addPoints(3);
 	}
 	else if (activeTeam1->data->getTeamPower() > activeTeam2->data->getTeamPower())
 	{
-		activeTeam1->data->addPoints(activeTeam2->data->getTeamPoints());
-		findTeam(teamId1, false)->data->addPoints(activeTeam2->data->getTeamPoints());
+		activeTeam1->data->addPoints(3);
+		findTeam(teamId1, false)->data->addPoints(3);
 	}
 	else
 	{
