@@ -49,6 +49,11 @@ int PlayerByStats::getGamesPlayed() const
 	return gamesPlayed;
 }
 
+int PlayerByStats::getGoalsCount() const
+{
+	return goals;
+}
+
 void PlayerByStats::setGamesPlayedWithTeam(std::shared_ptr<int> games)
 {
 	gamesPlayedWithTeam = games;

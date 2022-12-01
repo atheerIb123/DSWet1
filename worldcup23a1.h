@@ -27,7 +27,7 @@ private:
 	AVLTree<Team> activeTeams;
 	AVLTree<Team> nonEmptyTeams;
 
-	int topScorer;
+	int topScorer[2];//Index[0] = playerId, Index[1] = totalGoals that playerId scored
 	int totalTeams;
 
 	Node<Team>* findTeam(int teamId, bool emptyFlag);

@@ -32,6 +32,8 @@ void world_cup_t::updateTeamId(Node<PlayerById>* root, int newTeamId)
 
 world_cup_t::world_cup_t()
 {
+	topScorer[0] = -1;
+	topScorer[1] = -1;
 	// TODO: Your code goes here
 }
 
@@ -105,7 +107,7 @@ StatusType world_cup_t::add_player(int playerId, int teamId, int gamesPlayed,
 	
 	std::shared_ptr<int> team_id = std::make_shared<int>();
 	*team_id = teamId;
-
+	
 	PlayerById newPlayerId(playerId, team_id, gamesPlayed, goals, cards, goalKeeper);
 	PlayerByStats newPlayerSt(playerId, team_id, gamesPlayed, goals, cards, goalKeeper);
 
@@ -158,6 +160,22 @@ StatusType world_cup_t::add_player(int playerId, int teamId, int gamesPlayed,
 		else
 		{
 			currentTeam->data->insertPlayer(&newPlayerSt, &newPlayerId);
+		}
+	}
+
+	if (topScorer[1] <= goals)
+	{
+		if (topScorer[1] == goals)
+		{
+			if (topScorer[0] < playerId)
+			{
+				topScorer[0] = playerId;
+			}
+		}
+		else if (topScorer[1] < goals)
+		{
+			topScorer[0] = playerId;
+			topScorer[1] = goals;
 		}
 	}
 
@@ -223,6 +241,17 @@ StatusType world_cup_t::remove_player(int playerId)
 		}
 	}
 
+	if (topScorer[0] == playerId)
+	{
+		PlayerByStats* top = playersByStats.findMax(playersByStats.getRoot());
+
+		if (top != nullptr)
+		{
+			topScorer[0] = top->getPlayerId();
+			topScorer[1] = top->getGoalsCount();
+		}
+	}
+
 	return StatusType::SUCCESS;
 }
 
@@ -247,9 +276,6 @@ StatusType world_cup_t::update_player_stats(int playerId, int gamesPlayed,
 	PlayerByStats p(playerId, nullptr, currentPlayer->data->getGamesPlayed(), currentPlayer->data->getGoalsCount(), currentPlayer->data->getCardsCount(), currentPlayer->data->isGoalKeeper());
 	Node<PlayerByStats>* playerToUpdate = playersByStats.find(playersByStats.getRoot(), p);
 
-	/*playersById.remove(currentPlayer->data);
-	tempId.updateStats(gamesPlayed, scoredGoals, cardsReceived);
-	playersById.insert(&tempId);*/
 
 	if (playerToUpdate == nullptr)
 	{
@@ -257,8 +283,6 @@ StatusType world_cup_t::update_player_stats(int playerId, int gamesPlayed,
 	}
 
 	PlayerByStats tempSt(*playerToUpdate->data);
-
-	
 
 	Node<Team>* currentTeam = findTeam(tempSt.getTeamId(), false);
 	currentTeam->data->updatePlayerStatsInTeam(*playerToUpdate->data, playerId, gamesPlayed, scoredGoals, cardsReceived);
@@ -277,6 +301,23 @@ StatusType world_cup_t::update_player_stats(int playerId, int gamesPlayed,
 	playersByStats.remove(playerToUpdate->data);
 	tempSt.updateStats(gamesPlayed, scoredGoals, cardsReceived);
 	playersByStats.insert(&tempSt);
+
+	if (topScorer[1] <= tempSt.getGoalsCount())
+	{
+		if (topScorer[1] == tempSt.getGoalsCount())
+		{
+			if (topScorer[0] < tempSt.getPlayerId())
+			{
+				topScorer[0] = tempSt.getPlayerId();
+			}
+		}
+		else if (topScorer[1] < tempSt.getGoalsCount())
+		{
+			topScorer[0] = tempSt.getPlayerId();
+			topScorer[1] = tempSt.getGoalsCount();
+		}
+	}
+
 	return StatusType::SUCCESS;
 }
 
@@ -479,11 +520,11 @@ output_t<int> world_cup_t::get_top_scorer(int teamId)
 	{
 		if (playersById.getNodesNum() == 0)
 			return StatusType::FAILURE;
-		return output_t<int>(topScorer);
+		return output_t<int>(topScorer[0]);
 	}
 	else //teamId > 0
 	{
-		Node<Team>* currentTeam = findTeam(teamId, true);
+		Node<Team>* currentTeam = findTeam(teamId, false);
 		if (currentTeam == nullptr || currentTeam->data->getPlayersCount() == 0)
 		{
 			return StatusType::FAILURE;

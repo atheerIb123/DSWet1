@@ -39,6 +39,7 @@ public:
 	~AVLTree();
 	void deleteTree(Node<T>* root);
 
+	T* findMax(Node<T>* root);
 	int calcHeight(Node<T>* node);
 	Node<T>* rightRotation(Node<T>* root);
 	Node<T>* leftRotation(Node<T>* root);
@@ -152,6 +153,22 @@ inline void AVLTree<T>::deleteTree(Node<T>* node)
 	deleteTree(node->left);
 	deleteTree(node->right);
 	delete node;
+}
+
+template<class T>
+inline T* AVLTree<T>::findMax(Node<T>* root)
+{
+	if (root == nullptr)
+	{
+		return nullptr;
+	}
+
+	if (root->right == nullptr)
+	{
+		return root->data;
+	}
+
+	return findMax(root->right);
 }
 
 template<class T>

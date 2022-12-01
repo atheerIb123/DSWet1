@@ -5,7 +5,8 @@ Team::Team(int teamId, int points) : points(points)
     this->teamId = teamId;
     this->goalKeepers[0] = 0;
     this->goalKeepers[1] = 0;
-    this->topScorerId = 0;
+    this->topScorer[0] = 0;
+    this->topScorer[1] = 0;
     this->totalCards = 0;
     this->totalGamesPlayed = std::make_shared<int>(0);
     this->totalGoals = 0;
@@ -35,6 +36,22 @@ bool Team::insertPlayer(PlayerByStats* newPlayerSt, PlayerById* newPlayerId)
     
     newPlayerSt->setGamesPlayedWithTeam(this->totalGamesPlayed);
     newPlayerId->setGamesPlayedWithTeam(this->totalGamesPlayed);
+
+    if (topScorer[1] <= newPlayerSt->getGoalsCount())
+    {
+        if (topScorer[1] == newPlayerSt->getGoalsCount())
+        {
+            if (topScorer[0] < newPlayerSt->getPlayerId())
+            {
+                topScorer[0] = newPlayerSt->getPlayerId();
+            }
+        }
+        else if (topScorer[1] < newPlayerSt->getGoalsCount())
+        {
+            topScorer[0] = newPlayerSt->getPlayerId();
+            topScorer[1] = newPlayerSt->getGoalsCount();
+        }
+    }
 
     return true;
 }
@@ -83,6 +100,16 @@ bool Team::removePlayer(int playerId)
         }
     }
 
+    if (topScorer[0] == playerId)
+    {
+        PlayerByStats* top = teamTreeByStats.findMax(teamTreeByStats.getRoot());
+        if (top != nullptr)
+        {
+            topScorer[0] = top->getPlayerId();
+            topScorer[1] = top->getGoalsCount();
+        }
+    }
+
     return true;
 }
 
@@ -108,6 +135,23 @@ void Team::updatePlayerStatsInTeam(PlayerByStats& p, int playerId, int gamesToAd
 
     this->totalCards += cardsToAdd;
     this->totalGoals += goalsToAdd;
+    
+    if (topScorer[1] <= tempSt.getGoalsCount())
+    {
+        if (topScorer[1] == tempSt.getGoalsCount())
+        {
+            if (topScorer[0] < tempSt.getPlayerId())
+            {
+                topScorer[0] = tempSt.getPlayerId();
+            }
+        }
+        else if(topScorer[1] < tempSt.getGoalsCount())
+        {
+            topScorer[0] = tempSt.getPlayerId();
+            topScorer[1] = tempSt.getGoalsCount();
+        }
+    }
+
 }
 
 void Team::inOrderPlayers(int* output, PlayerByStats* const playersOutPut) const
@@ -185,7 +229,7 @@ void Team::addPoints(int points)
 
 int Team::getTopScorer() const
 {
-    return this->topScorerId;
+    return this->topScorer[0];
 }
 
 int Team::getTeamPower() const
