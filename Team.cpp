@@ -199,6 +199,23 @@ void Team::mergeTeams(Team& other)
     teamTreeByStats.mergeTrees(first, this->totalPlayers, second, other.getPlayersCount(), mergedTeam);
 
     this->totalPlayers = teamTreeById.getNodesNum();
+    this->addPoints(other.getTeamPoints());
+    
+    if (this->topScorer[1] <= other.getTopScorerGoalsAmount())
+    {
+        if (topScorer[1] == other.getTopScorerGoalsAmount())
+        {
+            if (topScorer[0] < other.getTopScorer())
+            {
+                topScorer[0] = other.getTopScorer();
+            }
+        }
+        else
+        {
+            topScorer[0] = other.getTopScorer();
+            topScorer[1] = other.getTopScorerGoalsAmount();
+        }
+    }
 
     delete[] firstTeamPlayers;
     delete[] secondTeamPlayers;
@@ -230,6 +247,11 @@ void Team::addPoints(int points)
 int Team::getTopScorer() const
 {
     return this->topScorer[0];
+}
+
+int Team::getTopScorerGoalsAmount() const
+{
+    return this->topScorer[1];
 }
 
 int Team::getTeamPower() const
