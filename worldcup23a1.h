@@ -32,6 +32,9 @@ private:
 
 	Node<Team>* findTeam(int teamId, bool emptyFlag);
 	void updateTeamId(Node<PlayerById>* root, int newTeamId);
+	void findClosest(Node<PlayerByStats>* player);
+	void comparePlayers(Node<PlayerByStats>* p1, Node<PlayerByStats>* p2, Node<PlayerByStats>* p3, Node<PlayerByStats>* player);
+
 public:
 	// <DO-NOT-MODIFY> {
 
@@ -69,6 +72,10 @@ public:
 
 	output_t<int> knockout_winner_aux(int minTeamId, int maxTeamId, Team* participatingTeams, int size);
 
+	Node<PlayerByStats>* getRootOfS() const
+	{
+		return playersByStats.getRoot();
+	}
 	// } </DO-NOT-MODIFY>
 };
 

@@ -19,6 +19,10 @@ public:
 	void setTeamId(int newId);
 	int getGamesPlayed() const;
 	int getGoalsCount() const;
+	int getCardsCount() const
+	{
+		return this->cards;
+	}
 	void setGamesPlayedWithTeam(std::shared_ptr<int> games);
 	
 	virtual bool operator<(const PlayerByStats& other) const;

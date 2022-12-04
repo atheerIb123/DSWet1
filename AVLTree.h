@@ -7,13 +7,14 @@ template<class T>
 class Node
 {
 public:
-	Node(T& data) : data(new T(data)),left(nullptr), right(nullptr) {}
+	Node(T& data) : data(new T(data)),left(nullptr), right(nullptr), parent(nullptr) {}
 	Node(const Node& other);
 	Node& operator=(const Node& other);
 	~Node();
 
 	Node* right;
 	Node* left;
+	Node* parent;
 	T* data;
 };
 

@@ -1,5 +1,36 @@
 #include "worldcup23a1.h"
 
+Node<PlayerByStats>* getLeftRightestNode(Node<PlayerByStats>* node)
+{
+	if (node == nullptr)
+	{
+		return nullptr;
+	}
+
+	if (node->right == nullptr)
+	{
+		return node;
+	}
+
+	return getLeftRightestNode(node->right);
+}
+
+Node<PlayerByStats>* getRightLeftestNode(Node<PlayerByStats>* node)
+{
+	if (node == nullptr)
+	{
+		return nullptr;
+	}
+
+	if (node->left == nullptr)
+	{
+		return node;
+	}
+
+	return getRightLeftestNode(node->left);
+
+}
+
 Node<Team>* world_cup_t::findTeam(int teamId, bool emptyFlag)
 {
 	Team tempTeam(teamId, 0);
@@ -28,6 +59,72 @@ void world_cup_t::updateTeamId(Node<PlayerById>* root, int newTeamId)
 	updateTeamId(root->left, newTeamId);
 	root->data->setTeamId(newTeamId);
 	updateTeamId(root->right, newTeamId);
+}
+
+void world_cup_t::findClosest(Node<PlayerByStats>* player)
+{
+	Node<PlayerByStats>* current = player;
+	
+	while (current != nullptr)
+	{
+		comparePlayers(current->parent, getLeftRightestNode(current), getRightLeftestNode(current), current);
+		current = current->parent;
+	}
+}
+
+int min(int val1, int val2, int val3)
+{
+	if (val1 < val2)
+	{
+		return val1;
+	}
+	else if (val1 > val2)
+	{
+		return val2;
+	}
+
+	return min(min(val1, val2, 0), val3, 0);
+}
+
+void world_cup_t::comparePlayers(Node<PlayerByStats>* p1, Node<PlayerByStats>* p2, Node<PlayerByStats>* p3, Node<PlayerByStats>* player)
+{
+	int goalsDiff[3] = { 0 };
+	int cardsDiff[3] = { 0 };
+
+	if (p1 != nullptr)
+	{
+		goalsDiff[0] = abs(player->data->getGoalsCount() - p1->data->getGoalsCount());
+		cardsDiff[0] = abs(player->data->getCardsCount() - p1->data->getCardsCount());
+
+		if (p2 != nullptr)
+		{
+			goalsDiff[1] = abs(player->data->getGoalsCount() - p2->data->getGoalsCount());
+			cardsDiff[1] = abs(player->data->getCardsCount() - p2->data->getCardsCount());
+		}
+		if (p3 != nullptr)
+		{
+			goalsDiff[2] = abs(player->data->getGoalsCount() - p3->data->getGoalsCount());
+			cardsDiff[2] = abs(player->data->getCardsCount() - p3->data->getCardsCount());
+		}
+
+		int minGoals = min(goalsDiff[0], goalsDiff[1], goalsDiff[2]);
+		int minCards = min(cardsDiff[0], cardsDiff[1], cardsDiff[2]);
+		int goalsCounter = 0;
+		int cardsCounter = 0;
+		
+		for (int i = 0; i < 3; i++)
+		{	
+			if (minGoals == goalsDiff[0] && goalsDiff[0] == goalsDiff[1])
+			{
+				if (cardsDiff[0] < cardsDiff[1])
+				{
+
+				}
+			}
+		}
+		
+
+	}
 }
 
 world_cup_t::world_cup_t()
@@ -97,12 +194,12 @@ StatusType world_cup_t::add_player(int playerId, int teamId, int gamesPlayed,
 {
 	if (playerId <= 0 || teamId <= 0 || gamesPlayed < 0 || goals < 0 || cards < 0)
 	{
-		return StatusType::FAILURE;
+		return StatusType::INVALID_INPUT;
 	}
 
 	if (gamesPlayed == 0 && (goals > 0 || cards > 0))
 	{
-		return StatusType::FAILURE;
+		return StatusType::INVALID_INPUT;
 	}
 	
 	std::shared_ptr<int> team_id = std::make_shared<int>();
@@ -178,6 +275,8 @@ StatusType world_cup_t::add_player(int playerId, int teamId, int gamesPlayed,
 			topScorer[1] = goals;
 		}
 	}
+
+	
 
 	return StatusType::SUCCESS;
 }
@@ -622,7 +721,6 @@ output_t<int> world_cup_t::knockout_winner(int minTeamId, int maxTeamId)
 }
 output_t<int> world_cup_t::knockout_winner_aux(int minTeamId, int maxTeamId, Team* participatingTeams, int size)
 {
-
 	Team* remainingTeams = new Team[size / 2 + size % 2];
 
 	if (size == 1)
@@ -630,6 +728,7 @@ output_t<int> world_cup_t::knockout_winner_aux(int minTeamId, int maxTeamId, Tea
 		output_t<int> result(participatingTeams[0].getID());
 		return result;
 	}
+
 	int j = 0;
 	int firstResult = 0;
 	int secondResult = 0;

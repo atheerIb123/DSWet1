@@ -7,8 +7,7 @@
 
 class Team
 {
-private:
-
+private:	
 	AVLTree<PlayerByStats> teamTreeByStats;
 	AVLTree<PlayerById> teamTreeById;
 	int teamId;
