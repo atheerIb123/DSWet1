@@ -24,7 +24,7 @@ public:
 		return this->cards;
 	}
 	void setGamesPlayedWithTeam(std::shared_ptr<int> games);
-	
+	void setClosest(int playerId);
 	virtual bool operator<(const PlayerByStats& other) const;
 	virtual bool operator>(const PlayerByStats& other) const;
 	bool operator==(const PlayerByStats& other) const;
@@ -36,6 +36,7 @@ private:
 	int goals;
 	int cards;
 	bool goalKeeper;
+	int closestId;
 };
 
 #endif

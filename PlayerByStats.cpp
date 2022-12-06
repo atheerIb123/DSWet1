@@ -59,6 +59,11 @@ void PlayerByStats::setGamesPlayedWithTeam(std::shared_ptr<int> games)
 	gamesPlayedWithTeam = games;
 }
 
+void PlayerByStats::setClosest(int playerId)
+{
+	this->closestId = playerId;
+}
+
 bool PlayerByStats::operator<(const PlayerByStats& other) const
 {
 	if (this->goals < other.goals)
