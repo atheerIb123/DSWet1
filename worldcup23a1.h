@@ -76,6 +76,20 @@ public:
 	{
 		return playersByStats.getRoot();
 	}
+
+	Node<PlayerByStats>* getHead() const
+	{
+		return playersByStats.listOfNodes.head;
+	}
+	
+	Node<PlayerById>* getH() const
+	{
+		return playersById.listOfNodes.head;
+	}
+	int totalPlayers() const
+	{
+		return this->playersByStats.getNodesNum();
+	}
 	// } </DO-NOT-MODIFY>
 };
 

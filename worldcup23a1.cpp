@@ -523,11 +523,16 @@ StatusType world_cup_t::unite_teams(int teamId1, int teamId2, int newTeamId)
 			Node<Team>* activeTeam = activeTeams.find(activeTeams.getRoot(), *team1->data);
 
 			team1->data->mergeTeams(*team2->data);
-			team1->data->setNewId(newTeamId);
-			
-			updateTeamId(team1->data->getRootOfIds(), newTeamId);
+			/*team1->data->setNewId(newTeamId);
 
+			updateTeamId(team1->data->getRootOfIds(), newTeamId);*/
+			teamsInSystem.remove(findTeam(teamId2, true)->data);
 			findTeam(teamId1, true)->data->setNewId(newTeamId);
+
+			if (activeTeam2 != nullptr)
+			{
+				activeTeams.remove(activeTeam2->data);
+			}
 
 			if (activeTeam == nullptr && team1->data->getPlayersCount() >= 11 && team1->data->hasGoalKeeper())
 			{
@@ -540,13 +545,12 @@ StatusType world_cup_t::unite_teams(int teamId1, int teamId2, int newTeamId)
 
 			}
 
-			if (activeTeam2 != nullptr)
-			{
-				activeTeams.remove(activeTeam2->data);
-			}
 
 			nonEmptyTeams.remove(team2->data);
-			teamsInSystem.remove(findTeam(teamId2, true)->data);
+			team1->data->setNewId(newTeamId);
+
+			updateTeamId(team1->data->getRootOfIds(), newTeamId);
+			//teamsInSystem.remove(findTeam(teamId2, true)->data);
 			this->totalTeams--;
 		}
 	}

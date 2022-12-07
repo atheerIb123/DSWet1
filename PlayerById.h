@@ -21,7 +21,10 @@ public:
 	int getGamesPlayed() const;
 	bool isGoalKeeper() const;
 	void setGamesPlayedWithTeam(std::shared_ptr<int> games);
-
+	int getPlayerId() const
+	{
+		return this->playerId;
+	}
 	bool operator<(const PlayerById& other) const;
 	bool operator>(const PlayerById& other) const;
 	bool operator==(const PlayerById& other) const;
