@@ -234,6 +234,11 @@ void Team::setGamesPlayed()
 {
 }
 
+Node<PlayerByStats>* Team::findPlayerByStats(PlayerByStats& player)
+{
+    return teamTreeByStats.find(teamTreeByStats.getRoot(), player);
+}
+
 int Team::getTeamPoints() const
 {
     return this->points;

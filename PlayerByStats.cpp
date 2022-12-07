@@ -54,6 +54,11 @@ int PlayerByStats::getGoalsCount() const
 	return goals;
 }
 
+int PlayerByStats::getCardsCount() const
+{
+	return this->cards;
+}
+
 void PlayerByStats::setGamesPlayedWithTeam(std::shared_ptr<int> games)
 {
 	gamesPlayedWithTeam = games;
@@ -62,6 +67,11 @@ void PlayerByStats::setGamesPlayedWithTeam(std::shared_ptr<int> games)
 void PlayerByStats::setClosest(int playerId)
 {
 	this->closestId = playerId;
+}
+
+int PlayerByStats::getClosest() const
+{
+	return this->closestId;
 }
 
 bool PlayerByStats::operator<(const PlayerByStats& other) const

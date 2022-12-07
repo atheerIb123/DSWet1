@@ -12,7 +12,6 @@ Node<Team>* world_cup_t::findTeam(int teamId, bool emptyFlag)
 	else
 	{
 		team = nonEmptyTeams.find(nonEmptyTeams.getRoot(), tempTeam);
-
 	}
 
 	return team;
@@ -34,6 +33,15 @@ void world_cup_t::findClosest(Node<PlayerByStats>* player)
 {
 	Node<PlayerByStats>* left = player->previous;
 	Node<PlayerByStats>* right = player->next;
+	int goalsDiff[2] = { 0 };
+	goalsDiff[0] = player->data->getGoalsCount() - left->data->getGoalsCount();
+	goalsDiff[1] = right->data->getGoalsCount() - player->data->getGoalsCount();
+	int cardsDiff[2] = { 0 };
+	cardsDiff[0] = abs(player->data->getCardsCount() - left->data->getCardsCount());
+	cardsDiff[1] = abs(right->data->getCardsCount() - player->data->getCardsCount());
+	int idDiff[2] = { 0 };
+	idDiff[0] = abs(player->data->getPlayerId() - left->data->getPlayerId());
+	idDiff[1] = abs(right->data->getPlayerId() - player->data->getPlayerId());
 
 	if (left == nullptr)
 	{
@@ -45,10 +53,47 @@ void world_cup_t::findClosest(Node<PlayerByStats>* player)
 	}
 	else if (right != nullptr && left != nullptr)
 	{
-		int goalsDiff[2] = { 0 };
-		goalsDiff[0];
+
+		if (goalsDiff[0] == goalsDiff[1])
+		{
+			if (cardsDiff[0] == cardsDiff[1])
+			{
+				if (idDiff[0] == idDiff[1])
+				{
+					if (left->data->getPlayerId() > right->data->getPlayerId())
+						player->data->setClosest(left->data->getPlayerId());
+					else
+						player->data->setClosest(right->data->getPlayerId());
+
+				}
+				else if (idDiff[0] > idDiff[1])
+				{
+					player->data->setClosest(right->data->getPlayerId());
+				}
+				else
+				{
+					player->data->setClosest(left->data->getPlayerId());
+				}
+			}
+			else if (cardsDiff[0] > cardsDiff[1])
+			{
+				player->data->setClosest(right->data->getPlayerId());
+			}
+			else
+			{
+				player->data->setClosest(left->data->getPlayerId());
+			}
+		}
+		else if (goalsDiff[0] > goalsDiff[1])
+		{
+			player->data->setClosest(right->data->getPlayerId());
+		}
+		else
+		{
+			player->data->setClosest(left->data->getPlayerId());
+		}
 	}
-	
+
 }
 
 int min(int val1, int val2, int val3)
@@ -63,10 +108,6 @@ int min(int val1, int val2, int val3)
 	}
 
 	return min(min(val1, val2, 0), val3, 0);
-}
-
-void world_cup_t::comparePlayers(Node<PlayerByStats>* p1, Node<PlayerByStats>* p2, Node<PlayerByStats>* p3, Node<PlayerByStats>* player)
-{
 }
 
 world_cup_t::world_cup_t()
@@ -143,10 +184,10 @@ StatusType world_cup_t::add_player(int playerId, int teamId, int gamesPlayed,
 	{
 		return StatusType::INVALID_INPUT;
 	}
-	
+
 	std::shared_ptr<int> team_id = std::make_shared<int>();
 	*team_id = teamId;
-	
+
 	PlayerById newPlayerId(playerId, team_id, gamesPlayed, goals, cards, goalKeeper);
 	PlayerByStats newPlayerSt(playerId, team_id, gamesPlayed, goals, cards, goalKeeper);
 
@@ -188,7 +229,7 @@ StatusType world_cup_t::add_player(int playerId, int teamId, int gamesPlayed,
 		return StatusType::FAILURE;
 	}
 
-	
+
 	//Checking if the team is fit to join the active teams tree
 	Node<Team>* tempTeam = findTeam(teamId, false);
 	if (tempTeam->data->getPlayersCount() >= 11 && tempTeam->data->hasGoalKeeper())
@@ -218,7 +259,7 @@ StatusType world_cup_t::add_player(int playerId, int teamId, int gamesPlayed,
 		}
 	}
 
-	
+
 
 	return StatusType::SUCCESS;
 }
@@ -242,9 +283,9 @@ StatusType world_cup_t::remove_player(int playerId)
 
 	PlayerByStats pStats(playerId, nullptr, tempPlayer->data->getGamesPlayed(), tempPlayer->data->getGoalsCount(), tempPlayer->data->getCardsCount(), tempPlayer->data->isGoalKeeper());
 	Node<PlayerByStats>* tempSt = playersByStats.find(playersByStats.getRoot(), pStats);
-	
+
 	int amountOfPlayers[2] = { 0 };
-	
+
 	amountOfPlayers[0] = playersById.getNodesNum();
 	amountOfPlayers[1] = playersByStats.getNodesNum();
 
@@ -257,7 +298,7 @@ StatusType world_cup_t::remove_player(int playerId)
 	}
 
 	Node<Team>* currentTeam = findTeam(teamIdOfPlayer, false);
-	
+
 	if (currentTeam->data->removePlayer(playerId) == false)
 	{
 		return StatusType::FAILURE;
@@ -368,17 +409,17 @@ StatusType world_cup_t::play_match(int teamId1, int teamId2)
 	{
 		return StatusType::INVALID_INPUT;
 	}
-	
+
 	Team temp1(teamId1, 0);
 	Team temp2(teamId2, 0);
 	Node<Team>* activeTeam1 = activeTeams.find(activeTeams.getRoot(), temp1);
 	Node<Team>* activeTeam2 = activeTeams.find(activeTeams.getRoot(), temp2);
-	
+
 	if (!activeTeam1 || !activeTeam2)
 	{
 		return StatusType::FAILURE;
 	}
-	
+
 	if (activeTeam1->data->getTeamPower() < activeTeam2->data->getTeamPower())
 	{
 		activeTeam2->data->addPoints(3);
@@ -399,7 +440,7 @@ StatusType world_cup_t::play_match(int teamId1, int teamId2)
 
 	activeTeam1->data->incrementGamesPlayed();
 	activeTeam2->data->incrementGamesPlayed();
-	
+
 	return StatusType::SUCCESS;
 }
 
@@ -443,9 +484,9 @@ output_t<int> world_cup_t::get_team_points(int teamId)
 	{
 		points = team->data->getTeamPoints();
 	}
-	
+
 	output_t<int> res(points);
-	
+
 	return res;
 }
 
@@ -484,7 +525,7 @@ StatusType world_cup_t::unite_teams(int teamId1, int teamId2, int newTeamId)
 
 			Team activeTeamTemp(teamId1, 0);
 			Node<Team>* activeTeam1 = activeTeams.find(activeTeams.getRoot(), activeTeamTemp);
-			
+
 			updateTeamId(team1->data->getRootOfIds(), newTeamId);
 
 			teamsInSystem.find(teamsInSystem.getRoot(), activeTeamTemp)->data->setNewId(newTeamId);
@@ -504,7 +545,7 @@ StatusType world_cup_t::unite_teams(int teamId1, int teamId2, int newTeamId)
 	{
 		Team activeTeamTemp2(teamId2, 0);
 		Node<Team>* activeTeam2 = activeTeams.find(activeTeams.getRoot(), activeTeamTemp2);
-		
+
 		if (team1 == nullptr)
 		{
 			team2->data->setNewId(newTeamId);
@@ -602,7 +643,7 @@ output_t<int> world_cup_t::get_all_players_count(int teamId)
 		{
 			totalPlayersInTeam = team->data->getPlayersCount();
 		}
-		
+
 		return output_t<int>(totalPlayersInTeam);
 	}
 }
@@ -642,10 +683,54 @@ StatusType world_cup_t::get_all_players(int teamId, int* const output)
 
 output_t<int> world_cup_t::get_closest_player(int playerId, int teamId)
 {
-	// TODO: Your code goes here
-	return 1006;
+	if (playerId <= 0 || teamId <= 0)
+		return StatusType::INVALID_INPUT;
+	Team tempTeam(teamId, 0);
+	Node<Team>* currentTeam = activeTeams.find(activeTeams.getRoot(), tempTeam);
+	if (currentTeam == nullptr)
+		return StatusType::FAILURE;
+	PlayerByStats tempPlayer(playerId, 0, 0, 0, 0, 0);
+	Node<PlayerByStats>* currentPlayer = currentTeam->data->findPlayerByStats(tempPlayer);
+	if (currentPlayer == nullptr)
+		return StatusType::FAILURE;
+	findClosest(currentPlayer);
+	return currentPlayer->data->getClosest();
 }
 
+int world_cup_t::findActiveTeams(int minTeamId, int maxTeamId, Team* partcipatingTeams, int size)
+{
+	int maxIndex = -1, minIndex = -1, j = 0;
+	Node<Team>* current = activeTeams.listOfNodes.head->next;
+	for (int i = 0; i < size; i++)
+	{
+		if (current->data->getID() == minTeamId)
+		{
+			minIndex = i;
+		}
+		else if (current != nullptr && current->next != nullptr && current->data->getID() < minTeamId && current->next->data->getID() > minTeamId)
+		{
+			minIndex = i + 1;
+		}
+		if (current != nullptr && current->next != nullptr && current->data->getID() < maxTeamId && current->next->data->getID() > maxTeamId)
+		{
+			maxIndex = i;
+			break;
+		}
+		current = current->next;
+	}
+
+	current = activeTeams.listOfNodes.head->next;
+	for (int i = 0; i <= maxIndex; i++)
+	{
+		if (i >= minIndex)
+		{
+			partcipatingTeams[j] = *current->data;
+			j++;
+		}
+		current = current->next;
+	}
+	return j + 1;
+}
 output_t<int> world_cup_t::knockout_winner(int minTeamId, int maxTeamId)
 {
 	//take care of statusTypes
@@ -653,22 +738,17 @@ output_t<int> world_cup_t::knockout_winner(int minTeamId, int maxTeamId)
 		return StatusType::INVALID_INPUT;
 
 	Team* const participatingTeams = new Team[activeTeams.getNodesNum()];
-	Team tempMin(minTeamId, 0), tempMax(maxTeamId, 0);
-	Node<Team>* minNode = activeTeams.find(activeTeams.getRoot(), tempMin);
-	Node<Team>* maxNode = activeTeams.find(activeTeams.getRoot(), tempMax);
-
-	int index = 0;
-	activeTeams.inOrderMinToMax(activeTeams.getRoot(), minNode->data, maxNode->data, participatingTeams, index);
-	if (index == 0)
+	int index = findActiveTeams(minTeamId, maxTeamId, participatingTeams, activeTeams.getNodesNum());
+	if (index == 1)
+	{
 		return StatusType::FAILURE;
+	}
 
 	return(knockout_winner_aux(minTeamId, maxTeamId, participatingTeams, index));
 
 }
 output_t<int> world_cup_t::knockout_winner_aux(int minTeamId, int maxTeamId, Team* participatingTeams, int size)
 {
-	Team* remainingTeams = new Team[size / 2 + size % 2];
-
 	if (size == 1)
 	{
 		output_t<int> result(participatingTeams[0].getID());
@@ -683,7 +763,7 @@ output_t<int> world_cup_t::knockout_winner_aux(int minTeamId, int maxTeamId, Tea
 	{
 		if (i % 2 == 0 && i == size - 1)
 		{
-			remainingTeams[j] = participatingTeams[i];
+			participatingTeams[j] = participatingTeams[i];
 			break;
 		}
 
@@ -693,26 +773,25 @@ output_t<int> world_cup_t::knockout_winner_aux(int minTeamId, int maxTeamId, Tea
 		if (firstResult > secondResult)
 		{
 			participatingTeams[i].addPoints(3 + participatingTeams[i + 1].getTeamPoints());
-			remainingTeams[j] = participatingTeams[i];
+			participatingTeams[j] = participatingTeams[i];
 		}
 		else //draw or second team won
 		{
 			participatingTeams[i + 1].addPoints(3 + participatingTeams[i].getTeamPoints());
-			remainingTeams[j] = participatingTeams[i + 1];
+			participatingTeams[j] = participatingTeams[i + 1];
 		}
 		j++;
 	}
 	int winnerId;
 	if (size % 2 == 0)
 	{
-		output_t<int> winner = knockout_winner_aux(minTeamId, maxTeamId, remainingTeams, j);
+		output_t<int> winner = knockout_winner_aux(minTeamId, maxTeamId, participatingTeams, j);
 		winnerId = winner.ans();
 	}
 	else
 	{
-		output_t<int> winner = knockout_winner_aux(minTeamId, maxTeamId, remainingTeams, j + 1);
+		output_t<int> winner = knockout_winner_aux(minTeamId, maxTeamId, participatingTeams, j + 1);
 		winnerId = winner.ans();
 	}
-	delete[] remainingTeams;
 	return output_t<int>(winnerId);
 }

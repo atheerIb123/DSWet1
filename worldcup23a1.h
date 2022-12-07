@@ -33,8 +33,7 @@ private:
 	Node<Team>* findTeam(int teamId, bool emptyFlag);
 	void updateTeamId(Node<PlayerById>* root, int newTeamId);
 	void findClosest(Node<PlayerByStats>* player);
-	void comparePlayers(Node<PlayerByStats>* p1, Node<PlayerByStats>* p2, Node<PlayerByStats>* p3, Node<PlayerByStats>* player);
-
+	int findActiveTeams(int minTeamId, int maxTeamId, Team* partcipatingTeams, int size);
 public:
 	// <DO-NOT-MODIFY> {
 

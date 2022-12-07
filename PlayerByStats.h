@@ -19,15 +19,14 @@ public:
 	void setTeamId(int newId);
 	int getGamesPlayed() const;
 	int getGoalsCount() const;
-	int getCardsCount() const
-	{
-		return this->cards;
-	}
+	int getCardsCount() const;
 	void setGamesPlayedWithTeam(std::shared_ptr<int> games);
 	void setClosest(int playerId);
+	int getClosest() const;
 	virtual bool operator<(const PlayerByStats& other) const;
 	virtual bool operator>(const PlayerByStats& other) const;
 	bool operator==(const PlayerByStats& other) const;
+
 private:
 	int playerId;
 	std::shared_ptr<int> teamId;

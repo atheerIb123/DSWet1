@@ -40,14 +40,10 @@ private:
 	int max(int val1, int val2) const;
 	static Node<T>* findMinNode(Node<T>* root);
 	Node<T>* insertNode(Node<T>* root, T& data, Node<T>* nodeOfList);
-	Node<T>* removeNode(Node<T>*, T& data, bool changed);
+	Node<T>* removeNode(Node<T>*, T& data);
 	Node<T>* copyNodes(Node<T>* node);
 	void mergeArrays(T* const arr1, int size1, T* const arr2, int size2, T* const newArr);
 	Node<T>* mergeTreesRecu(int left, int right, Node<T>* root, T* const newArr);
-	Node<T>* getNext(Node<T>* head);
-	Node<T>* findNext(Node<T>* nodeRoot, Node<T>* head, Node<T>* Next);
-	Node<T>* getPrevious(Node<T>* head);
-	Node<T>* findPrevious(Node<T>* nodeRoot, Node<T>* head, Node<T>* previous);
 
 public:
 	AVLTree() : root(nullptr), numOfNodes(0), listOfNodes() {}
@@ -198,7 +194,7 @@ inline AVLTree<T>::~AVLTree()
 template<class T>
 inline void AVLTree<T>::deleteTree(Node<T>* node)
 {
-	if (node == NULL)
+	if (node == nullptr)
 	{
 		return;
 	}
@@ -368,7 +364,7 @@ inline Node<T>* AVLTree<T>::insertNode(Node<T>* node, T& data, Node<T>* nodeOfLi
 			newNode->previous = nodeOfList;
 			nodeOfList->next = newNode;
 		}
-		else if (nodeOfList->next != nullptr && nodeOfList->previous != nullptr && *nodeOfList->data < data) /*&& data > *nodeOfList->data*/
+		else if (nodeOfList->next != nullptr && nodeOfList->previous != nullptr && *nodeOfList->data < data) 
 		{
 			Node<T>* temp = nodeOfList->next;
 			nodeOfList->next = newNode;
@@ -440,18 +436,7 @@ inline Node<T>* AVLTree<T>::insert(T* data)
 	
 	listOfNodes.currentRoot = this->root;
 
-	/*return */
 	return insertNode(this->root, *data, listOfNodes.currentRoot);
-	/*Node<T>* temp = find(root, *data);
-	
-	if(temp != nullptr)
-	{
-		temp->next = getNext(temp);
-		if (temp->previous != nullptr)
-		{
-			temp->previous = getPrevious(temp);
-		}
-	}*/
 }
 
 template<class T>
@@ -529,7 +514,7 @@ inline Node<T>* AVLTree<T>::remove(T* data)
 		prevData = *(previous->data);
 	}
 
-	Node<T>* head = removeNode(root, *data, false);
+	Node<T>* head = removeNode(root, *data);
 
 	Node<T>* newNext = find(root, nextData);
 	Node<T>* newPrev = find(root, prevData);
@@ -564,183 +549,41 @@ inline Node<T>* AVLTree<T>::getRoot() const
 }
 
 template<class T>
-Node<T>* AVLTree<T>::getNext(Node<T>* head) {
-	if (head->right != nullptr)
-		return findMinNode(head->right);
-	return findNext(root, head, nullptr);
-}
-
-template<class T>
-Node<T>* AVLTree<T>::findNext(Node<T>* nodeRoot, Node<T>* head, Node<T>* Next) {
-	if (nodeRoot == head)
-		return Next;
-	if (*nodeRoot->data > *head->data)//(nodeRoot != nullptr && *nodeRoot->data > *head->data)
-		return findNext(nodeRoot->left, head, Next);
-	else //if(nodeRoot != nullptr && *nodeRoot->data < *head->data)
-		return findNext(nodeRoot->right, head, Next);
-}
-
-template<class T>
-Node<T>* AVLTree<T>::getPrevious(Node<T>* head) {
-	if (head->left != nullptr)
-		return findMinNode(head->left);
-	return findPrevious(root, head, nullptr);
-}
-
-template<class T>
-inline Node<T>* AVLTree<T>::findPrevious(Node<T>* nodeRoot, Node<T>* head, Node<T>* previous) {
-	if (nodeRoot == head)
-		return previous;
-	if (*nodeRoot->data > *head->data)
-		return findNext(nodeRoot->left, head, previous);
-	else
-		return findNext(nodeRoot->right, head, previous);
-}
-template<class T>
-inline Node<T>* AVLTree<T>::removeNode(Node<T>* head, T& data, bool changed)
+inline Node<T>* AVLTree<T>::removeNode(Node<T>* head, T& data)
 {
-	//if (node == nullptr)
-	//{
-	//	return node;
-	//}
-
-	//if (data < *(node->data)) //search in the left sub-tree
-	//{
-	//	node->left = removeNode(node->left, data);
-	//}
-	//else if (data > *(node->data)) //search in the right sub-tree
-	//{
-	//	node->right = removeNode(node->right, data);
-	//}
-	//else //We found the actual node
-	//{
-	//	Node<T>* toDelete = nullptr;
-
-	//	if (node->right == nullptr || node->left == nullptr)
-	//	{
-	//		/*if (nodeOfList->previous == nullptr)
-	//		{
-	//			listOfNodes.head = nodeOfList->next;
-	//			nodeOfList->next->previous = nullptr;
-	//		}
-	//		else if (nodeOfList->next != nullptr && nodeOfList->previous != nullptr)
-	//		{
-	//			Node<T>* temp = nodeOfList->previous;
-	//			temp->next = nodeOfList->next;
-	//			nodeOfList->next->previous = temp;
-	//		}
-	//		else if (nodeOfList->next == nullptr)
-	//		{
-	//			Node<T>* temp = nodeOfList->previous;
-	//			temp->next = nullptr;
-	//		}*/
-
-	//		if (node->right == nullptr && node->left == nullptr) //has no children (in case of having a leaf)
-	//		{
-	//			toDelete = node;
-	//			node = nullptr;
-	//			this->root = node;
-	//		}
-	//		else
-	//		{
-	//			toDelete = node->left ? node->left : node->right;
-	//			*(node->data) = *(toDelete->data);
-	//		}
-
-	//		if (toDelete->next == nullptr && toDelete->previous)
-	//		{
-	//			toDelete->previous->next = nullptr;
-	//		}
-	//		else if (toDelete->previous == nullptr && toDelete->next != nullptr)
-	//		{
-	//			listOfNodes.head = toDelete->next;
-	//			toDelete->next->previous = nullptr;
-	//		}
-	//		else if (toDelete->previous != nullptr && toDelete->next != nullptr)
-	//		{
-	//			Node<T>* temp = toDelete->previous;
-	//			temp->next = toDelete->next;
-	//			toDelete->next->previous = temp;
-	//		}
-
-	//		this->numOfNodes--;
-	//		Node<T>* right = nullptr;
-
-	//		if (node != nullptr)
-	//		{
-	//			right = node->right;
-	//		}
-	//		delete toDelete;
-	//		toDelete = nullptr;
-	//		right = nullptr;
-	//	}
-	//	else //in case the wanted node for deletion has two children
-	//	{
-	//		Node<T>* temp = findMinNode(node->right);
-	//		*(node->data) = *(temp->data);
-	//		node->right = removeNode(node->right, *(temp->data));
-	//	}
-	//}
-
-	//if (node == nullptr)
-	//{
-	//	return node;
-	//}
-
-	//node = balanceTree(node);
-	//this->root = node;
-	//this->listOfNodes.currentRoot = this->root;
-
-	//return this->root;
 	
 	if (head == nullptr)
+	{
 		return nullptr;
+
+	}
+
 	if (data < *head->data)
 	{
-		head->left = removeNode(head->left, data, changed);
+		head->left = removeNode(head->left, data);
 	}
 	else if (data > *head->data)
 	{
-		head->right = removeNode(head->right, data, changed);
+		head->right = removeNode(head->right, data);
 	}
 	else
 	{
-		Node<T>* r = head->right;
-
-		/*if (changed != true)
-		{
-			if (head->next == nullptr && head->previous)
-			{
-				head->previous->next = nullptr;
-			}
-			else if (head->previous == nullptr && head->next != nullptr)
-			{
-				listOfNodes.head = head->next;
-				head->next->previous = nullptr;
-			}
-			else if (head->previous != nullptr && head->next != nullptr)
-			{
-				Node<T>* temp = head->previous;
-				temp->next = head->next;
-				head->next->previous = temp;
-			}
-			changed = true;
-		}*/
+		Node<T>* rightHead = head->right;
 
 		if (head->right == nullptr) {
-			Node<T>* l = head->left;
+			Node<T>* leftHead = head->left;
 			delete(head);
-			head = l;
+			head = leftHead;
 		}
 		else if (head->left == nullptr) {
 			delete(head);
-			head = r;
+			head = rightHead;
 		}
 		else {
-			while (r->left != nullptr)
-				r = r->left;
-			*head->data = *r->data;
-			head->right = removeNode(head->right, *r->data, changed);
+			while (rightHead->left != nullptr)
+				rightHead = rightHead->left;
+			*head->data = *rightHead->data;
+			head->right = removeNode(head->right, *rightHead->data);
 		}
 	}
 	
