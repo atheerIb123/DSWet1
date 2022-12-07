@@ -441,7 +441,7 @@ inline Node<T>* AVLTree<T>::insert(T* data)
 	listOfNodes.currentRoot = this->root;
 
 	/*return */
-	insertNode(this->root, *data, listOfNodes.currentRoot);
+	return insertNode(this->root, *data, listOfNodes.currentRoot);
 	/*Node<T>* temp = find(root, *data);
 	
 	if(temp != nullptr)
@@ -547,7 +547,7 @@ inline Node<T>* AVLTree<T>::remove(T* data)
 		if (newNext->next != nullptr)
 		{
 			newNext->next->previous = newNext;
-			newNext->previous = getPrevious(newNext);
+			//newNext->previous = getPrevious(newNext);
 		}
 	}
 	
