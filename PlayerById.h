@@ -36,7 +36,6 @@ private:
 	int cards;
 	bool goalKeeper;
 	std::shared_ptr<int> gamesPlayedWithTeam;
-	PlayerByStats closest;
 };
 
 #endif

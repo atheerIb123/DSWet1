@@ -12,9 +12,8 @@ PlayerByStats::PlayerByStats()
 }
 
 PlayerByStats::PlayerByStats(int playerId, std::shared_ptr<int> teamId, int gamesPlayed, int goals, int cards, bool goalKeeper) :
-	playerId(playerId), teamId(std::move(teamId)), gamesPlayed(gamesPlayed), goals(goals), cards(cards), goalKeeper(goalKeeper), gamesPlayedWithTeam(nullptr)
-{
-}
+	playerId(playerId), teamId(std::move(teamId)), gamesPlayed(gamesPlayed), goals(goals), cards(cards), goalKeeper(goalKeeper), gamesPlayedWithTeam(nullptr), closestId(nullptr)
+{}
 
 
 void PlayerByStats::updateStats(int gamesPlayed, int scoredGoals, int cardsReceieved)
@@ -66,12 +65,22 @@ void PlayerByStats::setGamesPlayedWithTeam(std::shared_ptr<int> games)
 
 void PlayerByStats::setClosest(int playerId)
 {
-	this->closestId = playerId;
+	*this->closestId = playerId;
+}
+
+void PlayerByStats::setClosestPtr(std::shared_ptr<int> ptr)
+{
+	this->closestId = ptr;
 }
 
 int PlayerByStats::getClosest() const
 {
-	return this->closestId;
+	return *this->closestId;
+}
+
+bool PlayerByStats::isGk() const
+{
+	return this->goalKeeper;
 }
 
 bool PlayerByStats::operator<(const PlayerByStats& other) const

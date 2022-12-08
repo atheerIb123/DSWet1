@@ -353,6 +353,36 @@ inline Node<T>* AVLTree<T>::insertNode(Node<T>* node, T& data, Node<T>* nodeOfLi
 			this->root = newNode;
 			this->listOfNodes.head = newNode;
 		}
+		else if (nodeOfList->next == nullptr && data < *nodeOfList->data)
+		{
+			if (nodeOfList->previous != nullptr)
+			{
+				newNode->previous = nodeOfList->previous;
+				nodeOfList->previous->next = newNode;
+			}
+			else
+			{
+				newNode->previous = nullptr;
+			}
+
+			nodeOfList->previous = newNode;
+			newNode->next = nodeOfList;
+		}
+		else if (nodeOfList->previous == nullptr && data > *nodeOfList->data)
+		{
+			if (nodeOfList->next != nullptr)
+			{
+				newNode->next = nodeOfList->next;
+				nodeOfList->next->previous = newNode;
+			}
+			else
+			{
+				newNode->next = nullptr;
+			}
+
+			nodeOfList->next = newNode;
+			newNode->previous = nodeOfList;
+		}
 		else if (nodeOfList->previous == nullptr && data < *nodeOfList->data)
 		{
 			newNode->next = nodeOfList;

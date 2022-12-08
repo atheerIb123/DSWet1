@@ -44,7 +44,7 @@ public:
 	void mergeTeams(Team& other);
 	void incrementGamesPlayed();
 	void setGamesPlayed();
-	Node<PlayerByStats>* findPlayerByStats(PlayerByStats& player);
+	Node<PlayerByStats>* findPlayerById(int playerId);
 	bool operator<(const Team& other) const;
 	bool operator>(const Team& other) const;
 	bool operator==(const Team& other) const;

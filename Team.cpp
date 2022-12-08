@@ -234,9 +234,13 @@ void Team::setGamesPlayed()
 {
 }
 
-Node<PlayerByStats>* Team::findPlayerByStats(PlayerByStats& player)
+Node<PlayerByStats>* Team::findPlayerById(int playerId)
 {
-    return teamTreeByStats.find(teamTreeByStats.getRoot(), player);
+    PlayerById tempPlayer(playerId, 0, 0, 0, 0, 0);
+    Node<PlayerById>* currentPlayer = teamTreeById.find(teamTreeById.getRoot(), tempPlayer);
+    PlayerByStats tempStats(currentPlayer->data->getPlayerId(), nullptr, currentPlayer->data->getGamesPlayed(), currentPlayer->data->getGoalsCount(), currentPlayer->data->getCardsCount(), currentPlayer->data->isGoalKeeper());
+ 
+    return teamTreeByStats.find(teamTreeByStats.getRoot(), tempStats);
 }
 
 int Team::getTeamPoints() const

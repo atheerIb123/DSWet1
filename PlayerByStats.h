@@ -22,7 +22,9 @@ public:
 	int getCardsCount() const;
 	void setGamesPlayedWithTeam(std::shared_ptr<int> games);
 	void setClosest(int playerId);
+	void setClosestPtr(std::shared_ptr<int> ptr);
 	int getClosest() const;
+	bool isGk() const;
 	virtual bool operator<(const PlayerByStats& other) const;
 	virtual bool operator>(const PlayerByStats& other) const;
 	bool operator==(const PlayerByStats& other) const;
@@ -35,7 +37,7 @@ private:
 	int goals;
 	int cards;
 	bool goalKeeper;
-	int closestId;
+	std::shared_ptr<int> closestId;
 };
 
 #endif

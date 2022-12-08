@@ -36,7 +36,6 @@ private:
 	int findActiveTeams(int minTeamId, int maxTeamId, Team* partcipatingTeams, int size);
 public:
 	// <DO-NOT-MODIFY> {
-
 	world_cup_t();
 	virtual ~world_cup_t() = default;
 	StatusType add_team(int teamId, int points);
