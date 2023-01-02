@@ -2,19 +2,26 @@
 
 PlayerByStats::PlayerByStats()
 {
-	playerId = 0;
-	teamId = nullptr;
-	gamesPlayed = 0;
-	goals = 0;
-	cards = 0;
-	goalKeeper = 0;
-	gamesPlayedWithTeam = nullptr;
+    playerId = 0;
+    teamId = nullptr;
+    gamesPlayed = 0;
+    goals = -1;
+    cards = 0;
+    goalKeeper = 0;
+    gamesPlayedWithTeam = nullptr;
 }
 
-PlayerByStats::PlayerByStats(int playerId, std::shared_ptr<int> teamId, int gamesPlayed, int goals, int cards, bool goalKeeper) :
-	playerId(playerId), teamId(std::move(teamId)), gamesPlayed(gamesPlayed), goals(goals), cards(cards), goalKeeper(goalKeeper), gamesPlayedWithTeam(nullptr), closestId(nullptr)
-{}
-
+PlayerByStats::PlayerByStats(int playerId, std::shared_ptr<int>& teamId, int gamesPlayed, int goals, int cards, bool goalKeeper, std::shared_ptr<int>& closest)
+{
+    this->playerId = playerId;
+    this->teamId = teamId;
+    this->gamesPlayed = gamesPlayed;
+    this->goals = goals;
+    this->cards = cards;
+    this->goalKeeper = goalKeeper;
+    this->gamesPlayedWithTeam = nullptr;
+    this->closestId = closest;
+}
 
 void PlayerByStats::updateStats(int gamesPlayed, int scoredGoals, int cardsReceieved)
 {
@@ -33,10 +40,6 @@ int PlayerByStats::getPlayerId() const
 	return this->playerId;
 }
 
-void PlayerByStats::setTeamId(int newId)
-{
-	*(this->teamId) = newId;
-}
 
 int PlayerByStats::getGamesPlayed() const
 {
@@ -58,7 +61,7 @@ int PlayerByStats::getCardsCount() const
 	return this->cards;
 }
 
-void PlayerByStats::setGamesPlayedWithTeam(std::shared_ptr<int> games)
+void PlayerByStats::setGamesPlayedWithTeam(std::shared_ptr<int>& games)
 {
 	gamesPlayedWithTeam = games;
 }
@@ -68,13 +71,18 @@ void PlayerByStats::setClosest(int playerId)
 	*this->closestId = playerId;
 }
 
-void PlayerByStats::setClosestPtr(std::shared_ptr<int> ptr)
+/*void PlayerByStats::setClosestPtr(std::shared_ptr<int>& ptr)
 {
 	this->closestId = ptr;
-}
+}*/
 
 int PlayerByStats::getClosest() const
 {
+    if(this->closestId.get() == nullptr)
+    {
+        return -1;
+    }
+
 	return *this->closestId;
 }
 
@@ -139,4 +147,9 @@ bool PlayerByStats::operator==(const PlayerByStats& other) const
 	}
 
 	return false;
+}
+
+void PlayerByStats::setTeamId(int newId)
+{
+    *this->teamId = newId;
 }

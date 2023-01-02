@@ -27,13 +27,13 @@ private:
 	AVLTree<Team> activeTeams;
 	AVLTree<Team> nonEmptyTeams;
 
-	int topScorer[2];//Index[0] = playerId, Index[1] = totalGoals that playerId scored
+	int topScorer[3];//Index[0] = playerId, Index[1] = totalGoals that playerId scored
 	int totalTeams;
-
 	Node<Team>* findTeam(int teamId, bool emptyFlag);
 	void updateTeamId(Node<PlayerById>* root, int newTeamId);
 	void findClosest(Node<PlayerByStats>* player);
-	int findActiveTeams(int minTeamId, int maxTeamId, Team* partcipatingTeams, int size);
+    output_t<int> knockout_winner_aux(int minTeamId, int maxTeamId, Team* participatingTeams, int size);
+
 public:
 	// <DO-NOT-MODIFY> {
 	world_cup_t();
@@ -68,26 +68,6 @@ public:
 
 	output_t<int> knockout_winner(int minTeamId, int maxTeamId);
 
-	output_t<int> knockout_winner_aux(int minTeamId, int maxTeamId, Team* participatingTeams, int size);
-
-	Node<PlayerByStats>* getRootOfS() const
-	{
-		return playersByStats.getRoot();
-	}
-
-	Node<PlayerByStats>* getHead() const
-	{
-		return playersByStats.listOfNodes.head;
-	}
-	
-	Node<PlayerById>* getH() const
-	{
-		return playersById.listOfNodes.head;
-	}
-	int totalPlayers() const
-	{
-		return this->playersByStats.getNodesNum();
-	}
 	// } </DO-NOT-MODIFY>
 };
 
