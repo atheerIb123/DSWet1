@@ -25,6 +25,14 @@ public:
 	void setClosestPtr(std::shared_ptr<int>& ptr);
 	int getClosest() const;
 	bool isGk() const;
+    int getGamesPlayedN()
+    {
+        return this->gamesPlayed;
+    }
+    void decGames(int amount)
+    {
+        this->gamesPlayed -= amount;
+    }
 	bool operator<(const PlayerByStats& other) const;
 	bool operator>(const PlayerByStats& other) const;
 	bool operator==(const PlayerByStats& other) const;

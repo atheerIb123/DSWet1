@@ -27,7 +27,13 @@ public:
     void setPlayerTeam(std::shared_ptr<Team>& t);
     void changeTeam(Team& t);
     std::shared_ptr<Team>& getPlayerTeam();
-
+    void decGames(int amount);
+    int getGamesPlayedWTeam();
+    void setGamesPlayedWhenJoined(int amount);
+    int getGamesPlayedNon() const
+    {
+        return this->gamesPlayed;
+    }
     int getPlayerId() const
 	{
 		return this->playerId;
@@ -44,6 +50,7 @@ private:
 	bool goalKeeper;
 	std::shared_ptr<int> gamesPlayedWithTeam;
     std::shared_ptr<Team> playerTeam;
+    int gamesPlayedWhenJoinedTeam;
 };
 
 #endif

@@ -48,7 +48,7 @@ int PlayerById::getGamesPlayed() const
 {
 	if (gamesPlayedWithTeam.get() != nullptr)
 	{
-		return gamesPlayed + *gamesPlayedWithTeam;
+		return gamesPlayed + *this->playerTeam->gamesPlayedPtr();
 	}
 
 	return gamesPlayed;
@@ -110,5 +110,19 @@ std::shared_ptr<Team>& PlayerById::getPlayerTeam()
 void PlayerById::changeTeam(Team &t)
 {
     *this->playerTeam = t;
+}
+
+void PlayerById::decGames(int amount)
+{
+    this->gamesPlayed -= amount;
+}
+
+int PlayerById::getGamesPlayedWTeam() {
+    return *this->gamesPlayedWithTeam;
+}
+
+void PlayerById::setGamesPlayedWhenJoined(int amount)
+{
+    this->gamesPlayedWhenJoinedTeam = amount;
 }
 

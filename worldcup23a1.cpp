@@ -214,14 +214,15 @@ StatusType world_cup_t::add_player(int playerId, int teamId, int gamesPlayed,
 	PlayerById newPlayerId(playerId, teamIdPtr, gamesPlayed, goals, cards, goalKeeper);
 	PlayerByStats newPlayerSt(playerId, teamIdPtr, gamesPlayed, goals, cards, goalKeeper, closest);
 
-    newPlayerId.setGamesPlayedWithTeam(gamesPlayedWTeam);
-	//newPlayerSt.setClosestPtr(closest);
-
 	//Adding the player to the players' trees
 	if (playersById.find(playersById.getRoot(), newPlayerId)) //|| playersByStats.find(playersByStats.getRoot(), newPlayerSt))
 	{
 		return StatusType::FAILURE;
 	}
+
+    newPlayerId.setGamesPlayedWithTeam(gamesPlayedWTeam);
+    newPlayerId.decGames(*gamesPlayedWTeam);
+    newPlayerSt.decGames(*gamesPlayedWTeam);
 
 	if (!playersByStats.insert(&newPlayerSt, true) || !playersById.insert(&newPlayerId, true))
 	{
@@ -238,21 +239,27 @@ StatusType world_cup_t::add_player(int playerId, int teamId, int gamesPlayed,
 
     Node<Team>* currTeam = nonEmptyTeams.find(nonEmptyTeams.getRoot(), *(team->data));
 	Node<PlayerById>* currPlayer = playersById.find(playersById.getRoot(), newPlayerId);
-    std::shared_ptr<Team> tt = std::make_shared<Team>(*(currTeam->data));
-    currPlayer->data->setPlayerTeam(tt);
+
     if (currTeam == nullptr)
 	{
-		if (team->data->insertPlayer(playerId, gamesPlayed, goals, cards, goalKeeper, teamIdPtr, closest,tt) == false)
+        nonEmptyTeams.insert(team->data, true);
+        Node<Team>* curr = nonEmptyTeams.find(nonEmptyTeams.getRoot(), *(team->data));
+        std::shared_ptr<Team> tt = std::make_shared<Team>(*(curr->data));
+        currPlayer->data->setPlayerTeam(tt);
+
+        if (curr->data->insertPlayer(playerId, gamesPlayed, goals, cards, goalKeeper, teamIdPtr, closest,tt) == false)
 		{
 			return StatusType::FAILURE;
 		}
 
-		nonEmptyTeams.insert(team->data, true);
-		findTeam(teamId, true)->data->removePlayer(playerId);
+
+		//findTeam(teamId, true)->data->removePlayer(playerId);
 	}
 	else
 	{
 		Node<Team>* tempTeam = findTeam(teamId, false); //Find it in the nonEmptyTeams tree
+        std::shared_ptr<Team> tt = std::make_shared<Team>(*(tempTeam->data));
+        currPlayer->data->setPlayerTeam(tt);
 
 		if (tempTeam->data->insertPlayer(playerId, gamesPlayed, goals, cards, goalKeeper, teamIdPtr, closest, tt) == false)
 		{
@@ -269,7 +276,7 @@ StatusType world_cup_t::add_player(int playerId, int teamId, int gamesPlayed,
 			activeTeams.insert(tempTeam->data, true);
 		else
 		{
-			currentTeam->data->insertPlayer(playerId, gamesPlayed, goals, cards, goalKeeper, teamIdPtr, closest, tt);
+			currentTeam->data->insertPlayer(playerId, gamesPlayed, goals, cards, goalKeeper, teamIdPtr, closest, currPlayer->data->getPlayerTeam());
 		}
 	}
 
@@ -428,9 +435,10 @@ StatusType world_cup_t::update_player_stats(int playerId, int gamesPlayed,
 
 	PlayerByStats tempSt(*playerToUpdate->data);
 
+    std::shared_ptr<int> z = (currentPlayer->data->getPlayerTeam()->gamesPlayedPtr());
 	remove_player(playerToUpdate->data->getPlayerId());
     tempSt.updateStats(gamesPlayed, scoredGoals, cardsReceived);
-	add_player(tempSt.getPlayerId(), tempSt.getTeamId(), tempSt.getGamesPlayed(), tempSt.getGoalsCount(), tempSt.getCardsCount(), tempSt.isGk());
+	add_player(tempSt.getPlayerId(), tempSt.getTeamId(), tempSt.getGamesPlayedN() + *z, tempSt.getGoalsCount(), tempSt.getCardsCount(), tempSt.isGk());
 
 
 
@@ -481,6 +489,7 @@ StatusType world_cup_t::play_match(int teamId1, int teamId2)
 		return StatusType::FAILURE;
 	}
 
+
 	if (activeTeam1->data->getTeamPower() < activeTeam2->data->getTeamPower())
 	{
 		activeTeam2->data->addPoints(3);
@@ -516,10 +525,6 @@ output_t<int> world_cup_t::get_num_played_games(int playerId)
         return output_t<int>(StatusType::INVALID_INPUT);
     }
 
-    if(playerId == 33)
-    {
-        printf("");
-    }
 
     std::shared_ptr<int> y = std::make_shared<int>(0);
 	PlayerById tempPlayer(playerId, y, 0, 0, 0, false);
@@ -532,6 +537,15 @@ output_t<int> world_cup_t::get_num_played_games(int playerId)
 	}
 
 	int gamesPlayed = (temp->data->getGamesPlayed());
+    if(*temp->data->getPlayerTeam()->gamesPlayedPtr() != temp->data->getGamesPlayedWTeam() && temp->data->getGamesPlayedWTeam() > 0)
+    {
+        gamesPlayed = temp->data->getGamesPlayedWTeam() + temp->data->getGamesPlayedNon();
+    }
+
+    if(gamesPlayed == 63402)
+    {
+        printf("");
+    }
 	output_t<int> output(gamesPlayed);
 
 	return output;
@@ -577,10 +591,7 @@ StatusType world_cup_t::unite_teams(int teamId1, int teamId2, int newTeamId)
 		return StatusType::INVALID_INPUT;
 	}
 
-    if(teamId1 == 12 && teamId2 == 2)
-    {
-        printf("");
-    }
+
 	if (!findTeam(teamId1, true) || !findTeam(teamId2, true))
 	{
 		return StatusType::FAILURE;
@@ -594,7 +605,10 @@ StatusType world_cup_t::unite_teams(int teamId1, int teamId2, int newTeamId)
 		}
 	}
 
-
+    if(teamId2 == 27381 && newTeamId == 26172)
+    {
+        printf("");
+    }
 
 	Node<Team>* team1 = findTeam(teamId1, false);
 	Node<Team>* team2 = findTeam(teamId2, false);
@@ -621,6 +635,10 @@ StatusType world_cup_t::unite_teams(int teamId1, int teamId2, int newTeamId)
 			Node<Team>* activeTeam1 = activeTeams.find(activeTeams.getRoot(), activeTeamTemp);
 
             std::shared_ptr<int> teamID = team1->data->teamIdPtr();
+            std::shared_ptr<int>& gamesPlayedWithTeam = team1->data->gamesPlayedPtr();
+
+            *gamesPlayedWithTeam = 0;
+
             teamsInSystem.remove(&activeTeamTemp, true);
             nonEmptyTeams.remove(team1->data, true);
 
@@ -663,6 +681,9 @@ StatusType world_cup_t::unite_teams(int teamId1, int teamId2, int newTeamId)
 		if (team1 == nullptr)
 		{
             std::shared_ptr<int> teamIdPtr = team2->data->teamIdPtr();
+            std::shared_ptr<int>& gamesPlayed = team2->data->gamesPlayedPtr();
+            *gamesPlayed = 0;
+
             teamsInSystem.remove(&activeTeamTemp2, true);
             nonEmptyTeams.remove(team2->data, true);
 
@@ -697,7 +718,7 @@ StatusType world_cup_t::unite_teams(int teamId1, int teamId2, int newTeamId)
             std::shared_ptr<int> teamID = team1->data->teamIdPtr();
             std::shared_ptr<int> gamesPlayedPtr1 = team1->data->gamesPlayedPtr();
             //std::shared_ptr<int>& gamesPlayedPtr2 = team2->data->gamesPlayedPtr();
-
+            *gamesPlayedPtr1 = 0;
             //team2->data->setGamesPlayed(gamesPlayedPtr1);
 			teamsInSystem.remove(findTeam(teamId1, true)->data, true);
             nonEmptyTeams.remove(findTeam(teamId1, false)->data, true);

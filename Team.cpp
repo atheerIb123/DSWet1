@@ -219,12 +219,13 @@ void Team::mergeTeams(Team& other)
     int index = 0;
     this->teamTreeById.inOrder(teamTreeById.getRoot(), firstTeamPlayers, index);
     other.inOrderPlayers(secondTeamPlayers);
+    *this->totalGamesPlayed = 0;
     for(int i = 0; i < other.getPlayersCount(); i++)
     {
         secondTeamPlayers[i].changeTeam(*this);
     }
     teamTreeById.mergeTrees(firstTeamPlayers, this->totalPlayers, secondTeamPlayers, other.getPlayersCount(), mergedTeamArr);
-    
+
     PlayerByStats* const first = new PlayerByStats[this->totalPlayers];
     PlayerByStats* const second = new PlayerByStats[other.getPlayersCount()];
     PlayerByStats* const mergedTeam = new PlayerByStats[this->totalPlayers + other.getPlayersCount()];
